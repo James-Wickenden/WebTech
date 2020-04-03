@@ -1,13 +1,59 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-GB" xml:lang="en-GB">
-<head><title>Home</title></head>
+<head>
+<style>
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+  border: 1px solid #000;
+}
+
+li {
+  float: left;
+  border-right:1px solid #bbb;
+}
+
+li:last-child {
+  border-right: none;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+li a:hover {
+  background-color: #111;
+}
+</style>
+<title>Home</title>
+</head>
+
 <body>
 
+<div name="navbar">
+<ul>
+  <li><a href="#home">{ Logo }</a></li>
+  <li><a href="#news">Explore</a></li>
+  <li><a href="#contact">{ Search }</a></li>
+  <li style="float:right"><a href="#about">Upload</a></li>
+  <li style="float:right"><a href="#about">Log In</a></li>
+</ul>
+</div>
+
+<div name="content" style="padding:14px 16px">
+
 <h1>Home</h1>
-
 <p><a href="https://www.w3schools.com/css/css_navbar.asp">Navbar</a></p>
-
 <p><a href="admin.html">Admin</a></p>
+
+</div>
 
 </body>
 </html>
