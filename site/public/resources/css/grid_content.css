@@ -1,14 +1,6 @@
 
 /* Content styling */
 
-  .content {
-    background-color: #ffffff;
-    padding-left:2%;
-    padding-right:2%;
-    padding-top:10px;
-    padding-bottom:20px;
-  }
-
   .content_types {
     overflow: hidden;
     background-color: #333;
@@ -29,5 +21,42 @@
   }
 
   .content_types .active {
-    background-color: #4CAF50;
+    background-color: green;
+  }
+
+  .content {
+    background-color: #ffffff;
+    padding:10px;
+  }
+
+  .content p {
+    padding-left:10px;
+  }
+
+  .content em {
+    font-size: 20px;
+    font-style: normal;
+  }
+
+  .content table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .content td {
+    padding: 10px;
+    vertical-align: top;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .content td h1 {
+    margin-top: 10px;
+  }
+
+  .content td p {
+    padding: 0;
+  }
+
+  .content tr:hover {
+    background-color: #e5e5e5;
   }

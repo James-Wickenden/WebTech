@@ -20,14 +20,10 @@ let root = "./public"
 // See http://en.wikipedia.org/wiki/List_of_HTTP_status_codes.
 // The file types supported are set up in the defineTypes function.
 // The paths variable is a cache of url paths in the site, to check case.
-
+let http = require("http");
 let fs = require("fs").promises;
 let OK = 200, NotFound = 404, BadType = 415, Error = 500;
 let types, paths;
-var options = { setHeaders: deliverXHTML };
-
-var express = require("express");
-var app = express();
 
 // Start the server:
 start();
@@ -36,9 +32,19 @@ start();
 // Start the http service. Accept only requests from localhost, for security.
 // If successful, the handle function is called for each request.
 async function start() {
-    app.use(express.static("public", options));
-	app.listen(80, "localhost");
-	console.log("Visit http://localhost:80/");
+    try {
+        await fs.access(root);
+        await fs.access(root + "/index.html");
+        types = defineTypes();
+        paths = new Set();
+        paths.add("/");
+        let service = http.createServer(handle);
+        service.listen(port, "localhost");
+        let address = "http://localhost";
+        if (port != 80) address = address + ":" + port;
+        console.log("Server running at", address);
+    }
+    catch (err) { console.log(err); process.exit(1); }
 }
 
 // Serve a request by delivering a file.
@@ -86,10 +92,11 @@ function findType(url) {
 }
 
 // Deliver the file that has been read in to the browser.
-function deliverXHTML(res, path, stat) {
-    if (path.endsWith(".html")) {
-        res.header("Content-Type", "application/xhtml+xml");
-    }
+function deliver(response, type, content) {
+    let typeHeader = { "Content-Type": type };
+    response.writeHead(OK, typeHeader);
+    response.write(content);
+    response.end();
 }
 
 // Give a minimal failure response to the browser
