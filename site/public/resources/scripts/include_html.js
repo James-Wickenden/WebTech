@@ -1,4 +1,7 @@
-function insert_navbar() {
+"use strict";
+console.log("starting");
+
+function includeHTML() {
   var z, i, elmnt, file, xhttp;
   /*loop through a collection of all HTML elements:*/
   z = document.getElementsByTagName("*");
@@ -14,10 +17,10 @@ function insert_navbar() {
           if (this.status == 200) {elmnt.innerHTML = this.responseText;}
           if (this.status == 404) {elmnt.innerHTML = "Page not found.";}
           /*remove the attribute, and call this function once more:*/
-          elmnt.removeAttribute("w3-include-html");
+          elmnt.removeAttribute("include-html");
           includeHTML();
         }
-      }      
+      }
       xhttp.open("GET", file, true);
       xhttp.send();
       /*exit the function:*/
