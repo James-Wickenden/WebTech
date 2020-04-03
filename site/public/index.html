@@ -5,6 +5,8 @@
   <meta charset="UTF-8"/>
   <title>Home</title>
 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+
   <link rel="stylesheet" type="text/css" href="resources/css/global_style.css"/>
   <link rel="stylesheet" type="text/css" href="resources/css/navbar.css"/>
   <link rel="stylesheet" type="text/css" href="resources/css/grid_content.css"/>
@@ -17,13 +19,14 @@
 <body>
 
   <div class="navbar">
-    <ul>
-      <li><a href="/">{ Logo }</a></li>
-      <li><a href="/">Explore</a></li>
-      <li><a href="/">Random</a></li>
-      <li><a href="#search">{ Search }</a></li>
-      <li style="float:right"><a href="login.html">Login or Create Account</a></li>
-    </ul>
+    <a href="/">{ Logo }</a>
+    <a href="/">Explore</a>
+    <a href="/">Random</a>
+    <div class="searchbar">
+      <input type="text" placeholder="Search..." name="search"></input>
+      <button type="submit"><i class="fa fa-search"></i></button>
+    </div>
+    <a href="login.html" style="float:right">Login or Create Account</a>
   </div>
 
   <div id="wrapper" style="padding-left:15%; padding-right:15%; height:100%;">

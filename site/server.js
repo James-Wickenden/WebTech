@@ -10,6 +10,7 @@ banUpperCase("./public/", "");
 // Define the sequence of functions to be called for each request.  Make URLs
 // lower case, ban upper case filenames, require authorisation for admin.html,
 // and deliver static files from ./public.
+app.use('/fonts/', express.static(path.join(__dirname, 'public/resources/fonts')));
 app.use(lower);
 app.use(ban)
 app.use("/admin.html", auth);

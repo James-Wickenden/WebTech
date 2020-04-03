@@ -2,36 +2,41 @@
 /* Navbar styling */
 
   .navbar {
-    font-family: Verdana, Geneva, sans-serif;
+    overflow: hidden;
+    background-color: #800000;
     margin-bottom: 20px;
   }
 
-  .navbar ul {
-    list-style-type: none;
-    margin-top:0;
-    padding: 0;
-    overflow: hidden;
-    background-color: #800000;
-    border: 1px solid #000;
-  }
-
-  .navbar li {
+  .navbar a {
     float: left;
-    /* border-right:1px solid #bbb; margin: -8px; */
-  }
-
-  .navbar li:last-child {
-    border-right: none;
-  }
-
-  .navbar li a {
     display: block;
     color: white;
     text-align: center;
-    padding: 15px 15px;
+    padding: 14px 16px;
     text-decoration: none;
+    font-size: 17px;
   }
 
-  .navbar li a:hover {
+  .navbar a:hover {
     background-color: #600000;
   }
+
+  .navbar .searchbar {
+      overflow: hidden;
+      float:left;
+    }
+
+  .navbar .searchbar input[type=text] {
+  padding: 6px;
+  margin-top: 8px;
+  font-size: 17px;
+  border: none;
+}
+
+.navbar .searchbar button {
+  padding: 6px 10px;
+  margin-top: 8px;
+  background: #d0d0d0;
+  font-size: 17px;
+  border: none;
+}
