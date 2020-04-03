@@ -5,10 +5,12 @@
   <meta charset="UTF-8"/>
   <title>Home</title>
 
-  <link rel="stylesheet" type="text/css" href="resources/css/style.css"/>
+  <link rel="stylesheet" type="text/css" href="resources/css/global_style.css"/>
+  <link rel="stylesheet" type="text/css" href="resources/css/navbar.css"/>
+  <link rel="stylesheet" type="text/css" href="resources/css/grid_content.css"/>
   <!--
-  <script src="resources/scripts/include_html.js" defer="defer"></script>
--->
+    <script src="resources/scripts/include_html.js" defer="defer"></script>
+  -->
 
 </head>
 
@@ -17,7 +19,8 @@
   <div class="navbar">
     <ul>
       <li><a href="/">{ Logo }</a></li>
-      <li><a href="#explore">Explore</a></li>
+      <li><a href="/">Explore</a></li>
+      <li><a href="/">Random</a></li>
       <li><a href="#search">{ Search }</a></li>
       <li style="float:right"><a href="login.html">Login or Create Account</a></li>
     </ul>
@@ -25,8 +28,16 @@
 
   <div id="wrapper" style="padding-left:15%; padding-right:15%; height:100%;">
     <div class="content">
-      <h1>Home</h1>
+
+      <div class="content_types">
+        <a class="active" href="#">MAPS</a>
+        <a href="#">CONFIGS</a>
+        <a href="#">MODELS</a>
+        <a href="#">OTHER</a>
+      </div>
+
       <p><a href="admin.html">Admin</a></p>
+      <p style="text-align: center"><a href="/">Return to top</a></p>
     </div>
   </div>
 

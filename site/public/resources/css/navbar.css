@@ -1,14 +1,8 @@
 
-/* Global styling */
-
-  body {
-    background-color: #707070;
-    margin:0;
-  }
-
 /* Navbar styling */
 
   .navbar {
+    font-family: Verdana, Geneva, sans-serif;
     margin-bottom: 20px;
   }
 
@@ -17,7 +11,7 @@
     margin-top:0;
     padding: 0;
     overflow: hidden;
-    background-color: #700000;
+    background-color: #800000;
     border: 1px solid #000;
   }
 
@@ -39,15 +33,5 @@
   }
 
   .navbar li a:hover {
-    background-color: #111;
-  }
-
-/* Content styling */
-
-  .content {
-    background-color: #ffffff;
-    padding-left:2%;
-    padding-right:2%;
-    padding-top:10px;
-    padding-bottom:20px;
+    background-color: #600000;
   }
