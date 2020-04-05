@@ -47,6 +47,10 @@
     font-size: 50px;
   }
 
+  .container a:visited {
+    color: black;
+  }
+
   .border {
     margin-top: 10px;
     width: 100%;
