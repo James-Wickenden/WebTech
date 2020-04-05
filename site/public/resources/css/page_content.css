@@ -1,0 +1,19 @@
+
+/* Content styling; used with map.html for an individual submission's listing */
+
+  .content {
+    background-color: #ffffff;
+    padding:10px;
+  }
+
+  .content h1 {
+    margin-top: 0px;
+    text-align: center;
+  }
+
+  .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 50px;
+  }

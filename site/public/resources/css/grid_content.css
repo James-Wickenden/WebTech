@@ -1,5 +1,5 @@
 
-/* Content styling */
+/* Content styling; used with index.html for the content listing */
 
   .content_types {
     overflow: hidden;
@@ -59,4 +59,12 @@
 
   .content tr:hover {
     background-color: #e5e5e5;
+  }
+
+  .content a {
+    text-decoration: none;
+  }
+
+  .content a:link {
+    color: black;
   }
