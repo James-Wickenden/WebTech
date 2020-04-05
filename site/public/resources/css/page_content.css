@@ -3,12 +3,41 @@
 
   .content {
     background-color: #ffffff;
-    padding:10px;
+    padding:20px;
   }
 
   .content h1 {
-    margin-top: 0px;
+    margin-top: 20px;
     text-align: center;
+  }
+
+  .content h2 {
+    margin-top: -20px;
+    text-align: center;
+  }
+
+  .content a {
+    text-decoration: none;
+  }
+
+  .content a:link {
+    color: black;
+  }
+
+  .content p strong {
+    font-size: 16pt;
+  }
+
+  .content #upload_tag {
+    color: #606060;
+  }
+
+  .content #username {
+    color: #606060;
+  }
+
+  .content #comment {
+    margin-left: 3%;
   }
 
   .container {
@@ -16,4 +45,10 @@
     justify-content: center;
     align-items: center;
     font-size: 50px;
+  }
+
+  .border {
+    margin-top: 10px;
+    width: 100%;
+    border-bottom:1px solid #e2e2e2;
   }

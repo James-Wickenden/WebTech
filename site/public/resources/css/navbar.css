@@ -22,21 +22,21 @@
   }
 
   .navbar .searchbar {
-      overflow: hidden;
-      float:left;
-    }
+    overflow: hidden;
+    float:left;
+  }
 
   .navbar .searchbar input[type=text] {
-  padding: 6px;
-  margin-top: 8px;
-  font-size: 17px;
-  border: none;
-}
+    padding: 6px;
+    margin-top: 8px;
+    font-size: 17px;
+    border: none;
+  }
 
-.navbar .searchbar button {
-  padding: 6px 10px;
-  margin-top: 8px;
-  background: #d0d0d0;
-  font-size: 17px;
-  border: none;
-}
+  .navbar .searchbar button {
+    padding: 6px 10px;
+    margin-top: 8px;
+    background: #d0d0d0;
+    font-size: 17px;
+    border: none;
+  }
