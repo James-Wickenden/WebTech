@@ -1,7 +1,32 @@
 
 /* Content styling; used with user.html for an individual users's page */
 
+  .border {
+    margin-top: 10px;
+    width: 100%;
+    border-bottom:1px solid #e2e2e2;
+  }
+
   .content {
     background-color: #ffffff;
     padding:20px;
+  }
+
+  .container {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .container > div {
+    flex: 1;
+  }
+
+  .submissions {
+    padding-left: 10px;
+  }
+
+  .user_details {
+    padding-left: 10px;
+    border-left: 1px solid #b2b2b2;
   }
