@@ -28,7 +28,9 @@
 
   .navbar .searchbar input[type=text] {
     padding: 6px;
-    margin-top: 8px;
+    margin-left: 10px;
+    margin-right: -5px;
+    margin-top: 9px;
     font-size: 17px;
     border: none;
   }

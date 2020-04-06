@@ -19,7 +19,7 @@
     color: black;
   }
 
-  .content p strong {
+  .content p .content strong {
     font-size: 16pt;
   }
 
