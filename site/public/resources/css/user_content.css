@@ -1,17 +1,6 @@
 
 /* Content styling; used with user.html for an individual users's page */
 
-  .border {
-    margin-top: 10px;
-    width: 100%;
-    border-bottom:1px solid #e2e2e2;
-  }
-
-  .content {
-    background-color: #ffffff;
-    padding:20px;
-  }
-
   .container {
     width: 100%;
     display: flex;
@@ -20,9 +9,6 @@
 
   .container > div {
     flex: 1;
-  }
-
-  .submissions {
   }
 
   .user_details {
@@ -37,12 +23,7 @@
 
   .submissions td {
     padding: 10px;
-    vertical-align: top;
     border-bottom: 1px solid #ddd;
-  }
-
-  .submissions td h1 {
-    margin-top: 10px;
   }
 
   .submissions tr:hover {
@@ -50,13 +31,7 @@
   }
 
   .submission h2 {
-    margin-top: 0px;
-    margin-left: 10px;
     display: inline;
-  }
-
-  .submission p {
-    margin-left: 10px;
   }
 
   .submission #upload_tag {
