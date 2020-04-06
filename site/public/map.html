@@ -21,7 +21,7 @@
   <div class="navbar">
     <a href="/">{ Logo }</a>
     <a href="/">Explore</a>
-    <a href="/">Random</a>
+    <a href="map.html">Random</a>
     <div class="searchbar">
       <input type="text" placeholder="Search..." name="search"></input>
       <button type="submit"><i class="fa fa-search"></i></button>
@@ -57,15 +57,23 @@
 
       <div class="border"></div>
 
-      <h3>Comments (3)</h3>
+      <div class="comments">
+        <h3>Comments (3)</h3>
 
-      <p id="username"><a href="user.html">User 1</a> (1 day ago)</p>
-      <p id="comment">Comment 1</p>
-      <p id="username"><a href="user.html">User 2</a> (2 days ago)</p>
-      <p id="comment">Comment 2</p>
-      <p id="username"><a href="user.html">User 3</a> (3 days ago)</p>
-      <p id="comment">Comment 3</p>
+        <p id="username"><a href="user.html">User 1</a> (1 day ago)</p>
+        <p id="comment">Comment 1</p>
+        <p id="username"><a href="user.html">User 2</a> (2 days ago)</p>
+        <p id="comment">Comment 2</p>
+        <p id="username"><a href="user.html">User 3</a> (3 days ago)</p>
+        <p id="comment">Comment 3</p>
 
+        <form action="#">
+          <input type="text" id="comment" placeholder="You must be logged in to comment."></input><br/>
+          <input type="submit" value="Submit"></input>
+        </form>
+      </div>
+      
+      <br/><br/>
       <p style="text-align: center"><a href="#"><i class="fa fa-arrow-up"></i></a></p>
     </div>
 

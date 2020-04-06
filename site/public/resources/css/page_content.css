@@ -56,3 +56,19 @@
     width: 100%;
     border-bottom:1px solid #e2e2e2;
   }
+
+  .content form {
+    margin-left: -30px;
+  }
+
+  .content input[type=text] {
+    width: 50%;
+    height: 50px;
+    padding: 10px;
+  }
+
+  .content input[type=submit] {
+    margin-left: 30px;
+    margin-top: 5px;
+    cursor: pointer;
+  }
