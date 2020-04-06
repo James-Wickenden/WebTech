@@ -28,18 +28,6 @@
     font-size: 16pt;
   }
 
-  .content #upload_tag {
-    color: #606060;
-  }
-
-  .content #username {
-    color: #606060;
-  }
-
-  .content #comment {
-    margin-left: 3%;
-  }
-
   .container {
     display: flex;
     justify-content: center;
@@ -57,18 +45,20 @@
     border-bottom:1px solid #e2e2e2;
   }
 
-  .content form {
-    margin-left: -30px;
+/* Comments styling; used with map.html for a comment section styling */
+
+  .content #upload_tag {
+    color: #606060;
   }
 
-  .content input[type=text] {
-    width: 50%;
-    height: 50px;
-    padding: 10px;
+  .content #username {
+    color: #606060;
   }
 
-  .content input[type=submit] {
-    margin-left: 30px;
-    margin-top: 5px;
-    cursor: pointer;
+  .content #comment {
+    margin-left: 3%;
+  }
+
+  .content textarea {
+    resize: none;
   }
