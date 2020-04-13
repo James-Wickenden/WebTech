@@ -9,7 +9,7 @@
 
   <link rel="stylesheet" type="text/css" href="resources/css/global_style.css"/>
   <link rel="stylesheet" type="text/css" href="resources/css/navbar.css"/>
-  <link rel="stylesheet" type="text/css" href="resources/css/login_style.css"/>
+  <link rel="stylesheet" type="text/css" href="resources/css/account_handling.css"/>
   <!--
     <script src="resources/scripts/include_html.js" defer="defer"></script>
   -->
@@ -36,17 +36,20 @@
 
       <h1>Create Account</h1>
 
-      <form class="login_form">
+      <form class="account_form">
 
         <label id="lab">Username:&#160;</label>
         <input type="text" id="l_username"></input><br/>
+        <label id="taken_username">&#160;<!--Username not taken--></label>
 
         <label id="lab">Password:&#160;</label>
-        <input type="text" id="l_password"></input><br/>
+        <input type="password" id="l_password_1"></input><br/>
 
-        <input id="but_submit" type="submit" value="Login"></input>
+        <label id="lab">Confirm Password:&#160;</label>
+        <input type="password" id="l_password_2"></input><br/>
+
+        <input id="but_create_account" type="submit" value="Create Account"></input>
       </form>
-      <p id="create_acc">Or, <a href="create_account.html">Create an Account</a></p>
     </div>
   </div>
 

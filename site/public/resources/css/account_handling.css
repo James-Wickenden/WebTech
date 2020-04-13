@@ -1,27 +1,35 @@
 
 /* Content styling; used with login.html for a login form */
 
-  .login_form #lab, .upload_form input {
+  .account_form #lab {
     vertical-align: top;
     margin-top: 10px;
     display: inline-block;
   }
 
-  .login_form #lab {
+  .account_form #lab {
     text-align: right;
     width: 20%;
   }
 
-  .login_form input {
+  .account_form input {
     width: 400px;
     margin-top: 10px;
   }
 
-  .login_form #but_login {
+  .account_form #but_login, .account_form #but_create_account{
     margin-left: 20%;
     width: auto;
   }
 
   #create_acc {
     text-align: center;
+  }
+
+  .account_form #taken_username {
+    margin-left: 20%;
+    display: block;
+    color: grey;
+    margin-top: 10px;
+    color: green;
   }
