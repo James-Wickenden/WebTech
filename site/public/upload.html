@@ -10,9 +10,8 @@
   <link rel="stylesheet" type="text/css" href="resources/css/global_style.css"/>
   <link rel="stylesheet" type="text/css" href="resources/css/navbar.css"/>
   <link rel="stylesheet" type="text/css" href="resources/css/upload_content.css"/>
-  <!--
-    <script src="resources/scripts/include_html.js" defer="defer"></script>
-  -->
+
+  <script src="resources/scripts/uploadFormOpener.js" defer="defer"></script>
 
 </head>
 
@@ -34,20 +33,11 @@
   <div id="wrapper" style="padding-left:5%; padding-right:5%; height:100%;">
     <div class="content">
       <h1>UPLOAD</h1>
+                                <!--method="post" enctype="multipart/form-data"-->
+      <form class="upload_form">
 
-      <!--
-        Name
-        Category
-        File
-        Screenshots
-        Description
-        Tags?
-      -->
-
-      <form class="upload_form" method="post" enctype="multipart/form-data">
-
-        <label id="lab">Type of submission:&#160;</label>
-        <select id="s_cats">
+        <label id="lab_cat">Type of submission:&#160;</label>
+        <select id="s_cats" onchange="formatCategory()">
           <option value="default">Select Category</option>
           <option value="o_map">Map</option>
           <option value="o_config">Config</option>
@@ -55,21 +45,43 @@
           <option value="o_other">Other</option>
         </select><br/>
 
-        <label id="lab">Submission name:&#160;</label>
-        <input type="text" id="s_name"></input><br/>
+        <div id="t_map">
+          <label id="lab_name_map">Map name:&#160;</label>
+          <input type="text" id="s_name_map"></input><br/>
 
-        <label id="lab">Upload map file:&#160;</label>
-        <input type="file" id="s_file"></input><br/>
-        <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Map uploads should be a .bsp file</label>
+          <label id="lab_file">Upload map file:&#160;</label>
+          <input type="file" id="s_file"></input><br/>
+          <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Map uploads should be a .bsp file</label>
 
-        <label id="lab">Description:&#160;</label>
-        <textarea rows="4" cols="50" id="s_desc" placeholder="Write a description here..."/><br/>
+          <label id="lab_desc">Description:&#160;</label>
+          <textarea rows="4" cols="50" id="s_desc" placeholder="Write a description here..."/><br/>
 
-        <label id="lab">Screenshots:&#160;</label>
-        <input type="file" id="s_screenshots" multiple="multiple"></input><br/>
-        <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Each screenshot should be a .png or .jpg file</label>
-        <!-- TODO: Add options for a thumbnail icon -->
-        <br/>
+          <label id="lab_screenshots">Screenshots:&#160;</label>
+          <input type="file" id="s_screenshots" multiple="multiple"></input><br/>
+          <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Each screenshot should be a .png or .jpg file</label>
+          <!-- TODO: Add options for a thumbnail icon -->
+          <br/>
+        </div>
+
+        <div id="t_config">
+          <!-- TODO: Add config name, file w/upload comment, desciption, tags? -->
+          <label id="lab_name_config">Config name:&#160;</label>
+          <input type="text" id="s_name_config"></input><br/>
+        </div>
+
+        <div id="t_model">
+          <!-- TODO: Add model name, file w/upload comment, installation todo w/optional default?, desciption, screenshots -->
+          <label id="lab_name_model">Model name:&#160;</label>
+          <input type="text" id="s_name_model"></input><br/>
+        </div>
+
+        <div id="t_other">
+          <!-- TODO: Add submission name, other category specification, file w/upload comment, desciption, optional screenshots -->
+          <label id="lab_name_other">Submission name:&#160;</label>
+          <input type="text" id="s_name_other"></input><br/>
+        </div>
+
+        <!-- TODO: Enforce required fields -->
         <input id="but_submit" type="submit" value="Submit"></input>
       </form>
 
