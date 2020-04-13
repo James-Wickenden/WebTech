@@ -1,0 +1,27 @@
+
+/* Content styling; used with login.html for a login form */
+
+  .login_form #lab, .upload_form input {
+    vertical-align: top;
+    margin-top: 10px;
+    display: inline-block;
+  }
+
+  .login_form #lab {
+    text-align: right;
+    width: 20%;
+  }
+
+  .login_form input {
+    width: 400px;
+    margin-top: 10px;
+  }
+
+  .login_form #but_login {
+    margin-left: 20%;
+    width: auto;
+  }
+
+  #create_acc {
+    text-align: center;
+  }

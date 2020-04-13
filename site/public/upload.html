@@ -44,7 +44,7 @@
         Tags?
       -->
 
-      <form class="upload_form">
+      <form class="upload_form" method="post" enctype="multipart/form-data">
 
         <label id="lab">Type of submission:&#160;</label>
         <select id="s_cats">
@@ -56,17 +56,20 @@
         </select><br/>
 
         <label id="lab">Submission name:&#160;</label>
-        <input type="text" id="s_name" placeholder="Name"></input><br/>
+        <input type="text" id="s_name"></input><br/>
 
         <label id="lab">Upload map file:&#160;</label>
-        <input type="text" id="s_file" placeholder="File"></input><br/>
+        <input type="file" id="s_file"></input><br/>
+        <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Map uploads should be a .bsp file</label>
 
         <label id="lab">Description:&#160;</label>
         <textarea rows="4" cols="50" id="s_desc" placeholder="Write a description here..."/><br/>
 
         <label id="lab">Screenshots:&#160;</label>
-        <input type="text" id="s_screenshots" placeholder="Screenshots"></input><br/>
-
+        <input type="file" id="s_screenshots" multiple="multiple"></input><br/>
+        <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Each screenshot should be a .png or .jpg file</label>
+        <!-- TODO: Add options for a thumbnail icon -->
+        <br/>
         <input id="but_submit" type="submit" value="Submit"></input>
       </form>
 

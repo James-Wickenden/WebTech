@@ -12,6 +12,13 @@
     width: 20%;
   }
 
+  .upload_form #upload_comment {
+    margin-left: 20%;
+    display: block;
+    color: grey;
+    margin-top: 10px;
+  }
+
   .upload_form input, .upload_form select, .upload_form textarea {
     width: 400px;
     margin-top: 10px;
