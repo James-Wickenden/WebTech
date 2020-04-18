@@ -19,3 +19,4 @@ Creating a website using Express
 - Comment on uploads
 - Favourite uploads
 - Reply to comments
+- About.html
