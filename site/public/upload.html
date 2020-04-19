@@ -13,7 +13,7 @@
 
   <script src="resources/scripts/uploadFormOpener.js" defer="defer"></script>
   <script src="resources/scripts/insert_Navbar.js" defer="defer"></script>
-  
+
 </head>
 
 <body>
@@ -23,57 +23,99 @@
     <div class="content">
       <h1>UPLOAD</h1>
                                 <!--method="post" enctype="multipart/form-data"-->
-      <form class="upload_form">
+      <div id="upload_form">
+        <form class="upload_form">
 
-        <label id="lab_cat">Type of submission:&#160;</label>
-        <select id="s_cats" onchange="formatCategory()">
-          <option value="default">Select Category</option>
-          <option value="o_map">Map</option>
-          <option value="o_config">Config</option>
-          <option value="o_model">Model</option>
-          <option value="o_other">Other</option>
-        </select><br/>
-
-        <div id="t_map">
-          <label id="lab_name_map">Map name:&#160;</label>
-          <input type="text" id="s_name_map"></input><br/>
-
-          <label id="lab_file">Upload map file:&#160;</label>
-          <input type="file" id="s_file"></input><br/>
-          <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Map uploads should be a .bsp file</label>
-
-          <label id="lab_desc">Description:&#160;</label>
-          <textarea rows="4" cols="50" id="s_desc" placeholder="Write a description here..."/><br/>
-
-          <label id="lab_screenshots">Screenshots:&#160;</label>
-          <input type="file" id="s_screenshots" multiple="multiple"></input><br/>
-          <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Each screenshot should be a .png or .jpg file</label>
-          <!-- TODO: Add options for a thumbnail icon -->
+          <label id="lab_cat">Type of submission:&#160;</label>
+          <select id="s_cats" onchange="formatCategory()">
+            <option value="default">Select Category</option>
+            <option value="o_map">Map</option>
+            <option value="o_config">Config</option>
+            <option value="o_model">Model</option>
+            <option value="o_other">Other</option>
+          </select><br/>
           <br/>
-        </div>
+          <!--
+           TODO: add options for thumbnails and tags
+           show small screenshots when uploading
+           enforce mandatory fields are filled in
 
-        <div id="t_config">
-          <!-- TODO: Add config name, file w/upload comment, desciption, tags? -->
-          <label id="lab_name_config">Config name:&#160;</label>
-          <input type="text" id="s_name_config"></input><br/>
-        </div>
+           if not logged in, replace upload_form div contents with message and link to login page.
+         -->
 
-        <div id="t_model">
-          <!-- TODO: Add model name, file w/upload comment, installation todo w/optional default?, desciption, screenshots -->
-          <label id="lab_name_model">Model name:&#160;</label>
-          <input type="text" id="s_name_model"></input><br/>
-        </div>
+          <div id="t_map">
+            <label id="lab_name_map">Map name:&#160;</label>
+            <input type="text" id="s_name_map"></input><br/>
 
-        <div id="t_other">
-          <!-- TODO: Add submission name, other category specification, file w/upload comment, desciption, optional screenshots -->
-          <label id="lab_name_other">Submission name:&#160;</label>
-          <input type="text" id="s_name_other"></input><br/>
-        </div>
+            <label id="lab_file_map">Upload map file:&#160;</label>
+            <input type="file" id="s_file_map"></input><br/>
+            <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Map uploads should be a .bsp file</label>
 
-        <!-- TODO: Enforce required fields -->
-        <input id="but_submit" type="submit" value="Submit"></input>
-      </form>
+            <label id="lab_desc_map">Description:&#160;</label>
+            <textarea rows="4" cols="50" id="s_desc_map" placeholder="Write a description here..."/><br/>
 
+            <label id="lab_screenshots_map">Screenshots:&#160;</label>
+            <input type="file" id="s_screenshots_map" multiple="multiple"></input><br/>
+            <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Each screenshot should be a .png or .jpg file</label>
+
+            <br/>
+          </div>
+
+          <div id="t_config">
+
+            <label id="lab_name_config">Config name:&#160;</label>
+            <input type="text" id="s_name_config"></input><br/>
+
+            <label id="lab_file_config">Upload config file:&#160;</label>
+            <input type="file" id="s_file_config"></input><br/>
+            <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Config uploads should be a .cfg file</label>
+
+            <label id="lab_desc_config">Description:&#160;</label>
+            <textarea rows="4" cols="50" id="s_desc_config" placeholder="Write a description here..."/><br/>
+
+            <br/>
+          </div>
+
+          <div id="t_model">
+            <!-- TODO: installation todo w/optional default?-->
+            <label id="lab_name_model">Model name:&#160;</label>
+            <input type="text" id="s_name_model"></input><br/>
+
+            <label id="lab_file_model">Upload model zip:&#160;</label>
+            <input type="file" id="s_file_model"></input><br/>
+            <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Model uploads should be a .zip file</label>
+
+            <label id="lab_desc_model">Description:&#160;</label>
+            <textarea rows="4" cols="50" id="s_desc_model" placeholder="Write a description here..."/><br/>
+
+            <label id="lab_screenshots_model">Screenshots:&#160;</label>
+            <input type="file" id="s_screenshots_model" multiple="multiple"></input><br/>
+            <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Each screenshot should be a .png or .jpg file</label>
+
+            <br/>
+          </div>
+
+          <div id="t_other">
+            <!-- TODO: Add submission name, other category specification, file w/upload comment, desciption, optional screenshots -->
+            <label id="lab_cat_other">Custom submission category:&#160;</label>
+            <input type="text" id="s_cat_other"></input><br/>
+
+            <label id="lab_name_other">Submission name:&#160;</label>
+            <input type="text" id="s_name_other"></input><br/>
+
+            <label id="lab_file_other">Upload file:&#160;</label>
+            <input type="file" id="s_file_other"></input><br/>
+            <label id="upload_comment">&#160;<i class="fa fa-info-circle"></i>&#160;Multiple files should be zipped then uploaded.</label>
+
+            <label id="lab_desc_other">Description:&#160;</label>
+            <textarea rows="4" cols="50" id="s_desc_other" placeholder="Write a description here..."/><br/>
+
+            <br/>
+          </div>
+
+          <input id="but_submit" type="submit" value="Submit"></input>
+        </form>
+      </div>
     </div>
   </div>
 
