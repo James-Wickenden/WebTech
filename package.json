@@ -3,6 +3,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "jquery": "^3.5.0",
+    "sqlite": "^3.0.6",
     "upper-case": "^2.0.1"
   }
 }
