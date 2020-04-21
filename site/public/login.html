@@ -12,6 +12,7 @@
   <link rel="stylesheet" type="text/css" href="resources/css/account_handling.css"/>
 
   <script src="resources/scripts/insert_Navbar.js" defer="defer"></script>
+  <script src="resources/scripts/login_Submitted.js" defer="defer"></script>
 
 </head>
 
@@ -23,13 +24,15 @@
 
       <h1>Login</h1>
 
-      <form class="account_form">
+      <form id="account_form">
 
         <label id="lab">Username:&#160;</label>
         <input type="text" id="l_username"></input><br/>
 
         <label id="lab">Password:&#160;</label>
         <input type="password" id="l_password"></input><br/>
+
+        <label id="l_status">&#160;</label>
 
         <input id="but_login" type="submit" value="Login"></input>
       </form>
