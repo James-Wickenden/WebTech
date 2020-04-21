@@ -29,6 +29,8 @@ var options = { setHeaders: deliverXHTML };
 var express = require("express");
 var app = express();
 
+var sqlite = require("sqlite");
+var db;
 // Start the server:
 start();
 
@@ -36,68 +38,82 @@ start();
 // Start the http service. Accept only requests from localhost, for security.
 // If successful, the handle function is called for each request.
 async function start() {
-    app.use(express.static("public", options));
-	app.listen(80, "localhost");
-	console.log("Visit http://localhost:80/");
+  db = await sqlite.open("./db.sqlite");
+  console.log(db);
+  app.use(express.static("public", options));
+  app.listen(80, "localhost");
+  console.log("Visit http://localhost:80/");
 }
+
+async function addNewUser() {
+  
+  return true;
+};
+
+// Returns true if there is already a user with that username
+async function doesUserExist(username) {
+  var ps = await db.prepare("select * from users where username=?");
+  var as = await ps.all(username);
+  if (as.length != 0) return true;
+  return false;
+};
 
 // Serve a request by delivering a file.
 async function handle(request, response) {
-    let url = request.url;
-    if (url.endsWith("/")) url = url + "index.html";
-    let ok = await checkPath(url);
-    if (! ok) return fail(response, NotFound, "URL not found (check case)");
-    let type = findType(url);
-    if (type == null) return fail(response, BadType, "File type not supported");
-    let file = root + url;
-    let content = await fs.readFile(file);
-    deliver(response, type, content);
+  let url = request.url;
+  if (url.endsWith("/")) url = url + "index.html";
+  let ok = await checkPath(url);
+  if (! ok) return fail(response, NotFound, "URL not found (check case)");    let type = findType(url);
+  if (type == null) return fail(response, BadType, "File type not supported");
+  let file = root + url;
+  let content = await fs.readFile(file);
+  deliver(response, type, content);
 }
 
 // Check if a path is in or can be added to the set of site paths, in order
 // to ensure case-sensitivity.
 async function checkPath(path) {
-    if (! paths.has(path)) {
-        let n = path.lastIndexOf("/", path.length - 2);
-        let parent = path.substring(0, n + 1);
-        let ok = await checkPath(parent);
-        if (ok) await addContents(parent);
-    }
-    return paths.has(path);
+  if (! paths.has(path)) {
+    let n = path.lastIndexOf("/", path.length - 2);
+    let parent = path.substring(0, n + 1);
+    let ok = await checkPath(parent);
+    if (ok) await addContents(parent);
+  }
+  return paths.has(path);
 }
 
 // Add the files and subfolders in a folder to the set of site paths.
 async function addContents(folder) {
-    let folderBit = 1 << 14;
-    let names = await fs.readdir(root + folder);
-    for (let name of names) {
-        let path = folder + name;
-        let stat = await fs.stat(root + path);
-        if ((stat.mode & folderBit) != 0) path = path + "/";
-        paths.add(path);
-    }
+  let folderBit = 1 << 14;
+  let names = await fs.readdir(root + folder);
+  for (let name of names) {
+    let path = folder + name;
+    let stat = await fs.stat(root + path);
+    if ((stat.mode & folderBit) != 0) path = path + "/";
+    paths.add(path);
+  }
 }
 
 // Find the content type to respond with, or undefined.
 function findType(url) {
-    let dot = url.lastIndexOf(".");
-    let extension = url.substring(dot + 1);
-    return types[extension];
+  let dot = url.lastIndexOf(".");
+  let extension = url.substring(dot + 1);
+  return types[extension];
 }
 
 // Deliver the file that has been read in to the browser.
 function deliverXHTML(res, path, stat) {
-    if (path.endsWith(".html")) {
-        res.header("Content-Type", "application/xhtml+xml");
-    }
+  if (path.endsWith(".html")) {
+    res.header("Content-Type", "application/xhtml+xml");
+  }
 }
 
 // Give a minimal failure response to the browser
 function fail(response, code, text) {
-    let textTypeHeader = { "Content-Type": "text/plain" };
-    response.writeHead(code, textTypeHeader);
-    response.write(text, "utf8");
-    response.end();
+  let textTypeHeader = { "Content-Type": "text/plain" };
+  response.writeHead(code, textTypeHeader);
+  response.write(text, "utf8");
+  response.end();
 }
 
 // The most common standard file extensions are supported, and html is

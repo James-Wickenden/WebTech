@@ -8,18 +8,18 @@ create();
 async function create() {
     try {
         db = await sqlite.open("./db.sqlite");
-        
-        await db.run("create table if not exists users (id INT, is_moderator BOOLEAN, join_date DATE, about TEXT, submissions TEXT);");
+
+        await db.run("create table if not exists users (id INT, username TEXT, password TEXT, is_moderator BOOLEAN, join_date DATE, about TEXT, submissions TEXT);");
         var as;
 
         as = await db.all("select * from users where id=1;");
         if (as.length==0) {
-          await db.run("insert into users values (1, true, '18/04/2020', 'Dev admin', '');");
+          await db.run("insert into users values (1, 'admin', 'password', true, '18/04/2020', 'Dev admin', '');");
         }
 
         as = await db.all("select * from users where id=2;");
         if (as.length==0) {
-          await db.run("insert into users values (2, false, '19/04/2020', 'Test user', '');");
+          await db.run("insert into users values (2, 'user1', 'password', false, '19/04/2020', 'Test user', '');");
         }
 
         as = await db.all("select * from users;");
@@ -29,8 +29,9 @@ async function create() {
 
 /*
 user ID
-is moderator
 username
+password
+is moderator
 date joined
 about
 submissions
