@@ -46,7 +46,7 @@ async function start() {
 }
 
 async function addNewUser() {
-  
+
   return true;
 };
 

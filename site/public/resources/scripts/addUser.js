@@ -11,5 +11,7 @@ function initHandler() {
 async function addNewUser(event) {
    event.preventDefault();
    console.log("Attempting to find existing user with that name...");
-   
+
+  
+
  };
