@@ -15,8 +15,26 @@ async function addNewUser(event) {
   let status = 0;
   let l_status = document.getElementById('l_status');
 
-  console.log("Submitting user data to server for validation and account creation...")
+  let all_fields_filled = true;
+
+  if (form['l_username'].value == '') {
+    all_fields_filled = false;
+  }
+  else if (form['l_password_1'].value == '') {
+    all_fields_filled = false;
+  }
+  else if (form['l_password_2'].value == '') {
+    all_fields_filled = false;
+  };
+
+  if (!all_fields_filled) {
+    updateStatusLabel(l_status, false, "One or more required fields are missing.")
+    return;
+  };
   
+  updateStatusLabel(l_status, false, "")
+  console.log("Submitting user data to server for validation and account creation...")
+
   // TODO:
   //  send form data to server.js
   //  perform all validation and database handling server-side for security

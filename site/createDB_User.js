@@ -9,7 +9,7 @@ async function create() {
     try {
         db = await sqlite.open("./db.sqlite");
 
-        await db.run("create table if not exists users (user_id INT PRIMARY KEY, username TEXT, password TEXT, is_moderator BOOLEAN, join_date DATE, about TEXT, submissions TEXT);");
+        await db.run("create table if not exists users (user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, is_moderator BOOLEAN, join_date DATE, about TEXT, submissions TEXT);");
         var as;
 
         as = await db.all("select * from users where user_id=1;");
@@ -23,7 +23,7 @@ async function create() {
         }
 
         as = await db.all("select * from users;");
-        console.log(as);
+        //console.log(as);
     } catch (e) { console.log(e); }
 }
 
