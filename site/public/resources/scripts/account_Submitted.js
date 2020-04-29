@@ -31,7 +31,7 @@ async function addNewUser(event) {
     updateStatusLabel(l_status, false, "One or more required fields are missing.")
     return;
   };
-  
+
   updateStatusLabel(l_status, false, "")
   console.log("Submitting user data to server for validation and account creation...")
 
@@ -42,21 +42,33 @@ async function addNewUser(event) {
   //
   //  e.g. status = server.handle(form);
 
-  if (status == 1) {
-    updateStatusLabel(l_status, true, "Account registered successfully!");
-  }
-  else if (status == 2) {
-    updateStatusLabel(l_status, false, "Please fill out the Username field.");
-  }
-  else if (status == 3) {
-    updateStatusLabel(l_status, false, "Please fill out the Password fields.");
-  }
-  else if (status == 4) {
-    updateStatusLabel(l_status, false, "Password fields do not match.");
-  }
-  else if (status == 5) {
-    updateStatusLabel(l_status, false, "That username is already taken.");
+  switch (status) {
+    case 1: {
+      updateStatusLabel(l_status, true, "Account registered successfully!");
+      break;
+    }
+    case 2: {
+      updateStatusLabel(l_status, false, "Please fill out the Username field.");
+      break;
+    }
+    case 3: {
+      updateStatusLabel(l_status, false, "Please fill out the Password fields.");
+      break;
+    }
+    case 4: {
+      updateStatusLabel(l_status, false, "Password fields do not match.");
+      break;
+    }
+    case 5: {
+      updateStatusLabel(l_status, false, "That username is already taken.");
+      break;
+    }
+    default: {
+      updateStatusLabel(l_status, false, "There was an error in the form submission.");
+      break;
+    }
   };
+
 };
 
 function updateStatusLabel(l_status, success, message) {

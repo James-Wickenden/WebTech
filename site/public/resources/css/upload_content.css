@@ -1,38 +1,38 @@
 
 /* Content styling; used with upload.html for a submission form */
 
-  .upload_form label, .upload_form input {
+  #upload_form label, #upload_form input {
     vertical-align: top;
     margin-top: 10px;
     display: inline-block;
   }
 
-  .upload_form #t_map {
+  #upload_form #t_map {
     display: none;
   }
 
-  .upload_form #t_config {
+  #upload_form #t_config {
     display: none;
   }
 
-  .upload_form #t_model {
+  #upload_form #t_model {
     display: none;
   }
 
-  .upload_form #t_other {
+  #upload_form #t_other {
     display: none;
   }
 
-  .upload_form label {
+  #upload_form label {
     text-align: right;
     width: 20%;
   }
 
-  .upload_form #lab_cat {
+  #upload_form #lab_cat {
     display: inline-block;
   }
 
-  .upload_form #upload_comment {
+  #upload_form #upload_comment {
     margin-left: 20%;
     color: blue;
     text-align: left;
@@ -41,17 +41,24 @@
     display: block;
   }
 
-  .upload_form input, .upload_form select, .upload_form textarea {
+  #upload_form input, #upload_form select, #upload_form textarea {
     width: 400px;
     margin-top: 10px;
   }
 
-  .upload_form textarea {
+  #upload_form textarea {
     resize: none;
   }
 
-  .upload_form #but_submit {
+  #upload_form #but_submit {
     margin-left: 20%;
     display: none;
     width: auto;
+  }
+
+  #upload_form #l_status {
+    margin-left: 20%;
+    display: inline;
+    color: #505050;
+    margin-top: 10px;
   }
