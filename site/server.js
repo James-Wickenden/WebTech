@@ -40,6 +40,13 @@ start();
 async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
+
+  var as;
+  as = await db.all("select * from users;");
+  console.log(as);
+  as = await db.all("select * from uploads;");
+  console.log(as);
+
   app.use(express.static("public", options));
   app.listen(80, "localhost");
   console.log("Visit http://localhost:80/");
