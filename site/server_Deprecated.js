@@ -20,45 +20,61 @@ let root = "./public"
 // See http://en.wikipedia.org/wiki/List_of_HTTP_status_codes.
 // The file types supported are set up in the defineTypes function.
 // The paths variable is a cache of url paths in the site, to check case.
-let http = require("http");
+
 let fs = require("fs").promises;
 let OK = 200, NotFound = 404, BadType = 415, Error = 500;
 let types, paths;
 
+var express = require("express");
+var session = require('express-session');
+var app = express();
+
 var sqlite = require("sqlite");
 var db;
 
-// Start the server:
+
 start();
 
-// Check the site, giving quick feedback if it hasn't been set up properly.
-// Start the http service. Accept only requests from localhost, for security.
-// If successful, the handle function is called for each request.
 async function start() {
   types = defineTypes();
   paths = new Set();
   paths.add("/");
-
+  
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
-  await fs.access(root);
-  await fs.access(root + "/index.html");
+  var as;
+  as = await db.all("select * from users;");
+  console.log(as);
+  as = await db.all("select * from uploads;");
+  console.log(as);
 
-  let service = http.createServer(handle);
-  service.listen(port, "localhost");
-  let address = "http://localhost";
-  if (port != 80) address = address + ":" + port;
+  app.get('/', function (req, res) {
+      handle(req,res);
+  });
 
+  app.post('/submit-data', function (req, res) {
+      res.send('POST Request');
+  });
+
+  app.put('/update-data', function (req, res) {
+      res.send('PUT Request');
+  });
+
+  app.delete('/delete-data', function (req, res) {
+      res.send('DELETE Request');
+  });
+
+  app.listen(80, "localhost");
   console.log("Visit http://localhost:80/");
 }
+
+
 
 // Serve a request by delivering a file.
 async function handle(request, response) {
     let url = request.url;
     if (url.endsWith("/")) url = url + "index.html";
-    console.log(url);
-
     let ok = await checkPath(url);
     if (! ok) return fail(response, NotFound, "URL not found (check case)");
     let type = findType(url);
@@ -114,6 +130,16 @@ function fail(response, code, text) {
     response.write(text, "utf8");
     response.end();
 }
+
+
+
+// Returns true if there is already a user with that username
+async function doesUserExist(username) {
+  var ps = await db.prepare("select * from users where username=?");
+  var as = await ps.all(username);
+  if (as.length != 0) return true;
+  return false;
+};
 
 // The most common standard file extensions are supported, and html is
 // delivered as "application/xhtml+xml".  Some common non-standard file
