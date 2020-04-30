@@ -44,35 +44,35 @@ function updateStatusLabel(l_status, success, message) {
 }
 
 function allFieldsFilled(form) {
-  
+
   switch(form["s_cats"].value) {
     case "o_map": {
       if (form["s_name_map"].value == '') return false;
-      //if (form["s_file_map"].value == '') return false;
+      if (form["s_file_map"].value == '') return false;
       if (form["s_desc_map"].value == '') return false;
-      //if (form["s_screenshots_map"].value == '') return false;
+      if (form["s_scsh_map"].value == '') return false;
       //if (form["s_tags_map"].value == '') return false;
       break;
     }
     case "o_config": {
       if (form["s_name_config"].value == '') return false;
-      //if (form["s_file_config"].value == '') return false;
+      if (form["s_file_config"].value == '') return false;
       if (form["s_desc_config"].value == '') return false;
       //if (form["s_tags_config"].value == '') return false;
       break;
     }
     case "o_model": {
       if (form["s_name_model"].value == '') return false;
-      //if (form["s_file_model"].value == '') return false;
+      if (form["s_file_model"].value == '') return false;
       if (form["s_desc_model"].value == '') return false;
-      //if (form["s_screenshots_model"].value == '') return false;
+      if (form["s_scsh_model"].value == '') return false;
       //if (form["s_tags_model"].value == '') return false;
       break;
     }
     case "o_other": {
       if (form["s_name_other"].value == '') return false;
-      if (form["s_cat_other"].value == '') return false;
-      //if (form["s_file_other"].value == '') return false;
+      if (form["s_cats_other"].value == '') return false;
+      if (form["s_file_other"].value == '') return false;
       if (form["s_desc_other"].value == '') return false;
       //if (form["s_tags_other"].value == '') return false;
       break;
@@ -83,5 +83,6 @@ function allFieldsFilled(form) {
     }
   };
 
+  console.log("All required fields filled.");
   return true;
 };
