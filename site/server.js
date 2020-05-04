@@ -59,6 +59,8 @@ async function handle(request, response) {
     if (url.endsWith("/")) url = url + "index.html";
     console.log(url);
 
+    if (url == "/data") return getList(response);
+
     let ok = await checkPath(url);
     if (! ok) return fail(response, NotFound, "URL not found (check case)");
     let type = findType(url);
@@ -67,6 +69,12 @@ async function handle(request, response) {
     let content = await fs.readFile(file);
     deliver(response, type, content);
 }
+
+async function getList(response) {
+  console.log("delivering list");
+  
+  deliver(response, "text/plain", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+};
 
 // Check if a path is in or can be added to the set of site paths, in order
 // to ensure case-sensitivity.
@@ -104,6 +112,11 @@ function deliver(response, type, content) {
     let typeHeader = { "Content-Type": type };
     response.writeHead(OK, typeHeader);
     response.write(content);
+
+    if (type == "text/plain") {
+      console.log(content);
+      console.log(response);
+    }
     response.end();
 }
 

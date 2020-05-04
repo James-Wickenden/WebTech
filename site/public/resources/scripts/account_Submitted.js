@@ -18,13 +18,13 @@ async function addNewUser(event) {
   let all_fields_filled = true;
 
   if (form['l_username'].value == '') {
-    all_fields_filled = false;
+    //all_fields_filled = false;
   }
   else if (form['l_password_1'].value == '') {
-    all_fields_filled = false;
+    //all_fields_filled = false;
   }
   else if (form['l_password_2'].value == '') {
-    all_fields_filled = false;
+    //all_fields_filled = false;
   };
 
   if (!all_fields_filled) {
@@ -41,6 +41,8 @@ async function addNewUser(event) {
   //  then get back status code for client response
   //
   //  e.g. status = server.handle(form);
+
+  fetchData();
 
   switch (status) {
     case 1: {
@@ -76,3 +78,13 @@ function updateStatusLabel(l_status, success, message) {
   if (success == false) l_status.setAttribute("style", "color: red;");
   l_status.innerHTML = message;
 }
+
+async function fetchData() {
+  console.log("Submitting");
+  await fetch("/data").then(receive);
+};
+
+async function receive(response) {
+  console.log(response);
+  console.log(response.responseText);
+};
