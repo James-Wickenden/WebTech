@@ -72,7 +72,7 @@ async function handle(request, response) {
 
 async function getList(response) {
   console.log("delivering list");
-  
+
   deliver(response, "text/plain", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 };
 
@@ -112,11 +112,6 @@ function deliver(response, type, content) {
     let typeHeader = { "Content-Type": type };
     response.writeHead(OK, typeHeader);
     response.write(content);
-
-    if (type == "text/plain") {
-      console.log(content);
-      console.log(response);
-    }
     response.end();
 }
 

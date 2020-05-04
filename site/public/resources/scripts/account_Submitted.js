@@ -81,7 +81,16 @@ function updateStatusLabel(l_status, success, message) {
 
 async function fetchData() {
   console.log("Submitting");
-  await fetch("/data").then(receive);
+  //await fetch("/data").then(receive);
+
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      receive(this);
+    }
+  };
+  xhttp.open("GET", "/data", true);
+  xhttp.send();
 };
 
 async function receive(response) {
