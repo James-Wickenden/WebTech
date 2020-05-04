@@ -35,53 +35,48 @@ async function addNewUser(event) {
   updateStatusLabel(l_status, false, "")
   console.log("Submitting user data to server for validation and account creation...")
 
-  // TODO:
-  //  send form data to server.js
-  //  perform all validation and database handling server-side for security
-  //  then get back status code for client response
-  //
-  //  e.g. status = server.handle(form);
+  requestNewAccount();
+};
 
-  fetchData();
-
+function handleStatusLabel(status) {
   switch (status) {
     case 1: {
-      updateStatusLabel(l_status, true, "Account registered successfully!");
+      updateStatusLabel(true, "Account registered successfully!");
       break;
     }
     case 2: {
-      updateStatusLabel(l_status, false, "Please fill out the Username field.");
+      updateStatusLabel(false, "Please fill out the Username field.");
       break;
     }
     case 3: {
-      updateStatusLabel(l_status, false, "Please fill out the Password fields.");
+      updateStatusLabel(false, "Please fill out the Password fields.");
       break;
     }
     case 4: {
-      updateStatusLabel(l_status, false, "Password fields do not match.");
+      updateStatusLabel(false, "Password fields do not match.");
       break;
     }
     case 5: {
-      updateStatusLabel(l_status, false, "That username is already taken.");
+      updateStatusLabel(false, "That username is already taken.");
       break;
     }
     default: {
-      updateStatusLabel(l_status, false, "There was an error in the form submission.");
+      updateStatusLabel(false, "There was an error in the form submission.");
       break;
     }
   };
-
 };
 
-function updateStatusLabel(l_status, success, message) {
+function updateStatusLabel(success, message) {
+  let l_status = document.getElementById('l_status');
+
   if (success == true)  l_status.setAttribute("style", "color: green;");
   if (success == false) l_status.setAttribute("style", "color: red;");
   l_status.innerHTML = message;
 }
 
-async function fetchData() {
+async function requestNewAccount() {
   console.log("Submitting");
-  //await fetch("/data").then(receive);
 
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
@@ -89,9 +84,16 @@ async function fetchData() {
       receive(this);
     }
   };
-  xhttp.open("GET", "/data", true);
-  xhttp.send();
+  xhttp.open("POST", "/post/newuser", true);
+  xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  xhttp.send(getParams());
+
+  handleStatusLabel(0);
 };
+
+function getParams() {
+  return "name=test1&pass=test2";
+}
 
 async function receive(response) {
   console.log(response);
