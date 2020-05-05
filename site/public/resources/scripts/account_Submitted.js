@@ -55,6 +55,7 @@ function handleStatusLabel(status) {
   switch (status) {
     case statusMode.SUCCESS: {
       updateStatusLabel(true, "Account registered successfully!");
+      window.location = "/home";
       break;
     }
     case statusMode.MISSING_USERNAME: {

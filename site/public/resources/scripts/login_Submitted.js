@@ -60,11 +60,6 @@ async function receive(response) {
   //console.log(response);
   //console.log(response.responseText);
   let l_status = document.getElementById('l_status');
-
-  if (response.responseText == "false") {
-    unsuccessful(l_status);
-  }
-  else {
-    successful(l_status);
-  };
+  if (response.responseText == "false") return unsuccessful(l_status);
+  window.location = "/home";
 };

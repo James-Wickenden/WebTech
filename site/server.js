@@ -65,7 +65,8 @@ async function handle(request, response) {
     console.log(url);
 
     if (url.includes("/post/")) return handlePOST(request, response);
-
+    if (url == "/home") url = "/user.html";
+    
     let ok = await checkPath(url);
     if (! ok) return fail(response, NotFound, "URL not found (check case)");
     let type = findType(url);
