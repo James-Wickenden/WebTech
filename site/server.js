@@ -61,7 +61,7 @@ async function handle(request, response) {
     if (url.endsWith("/")) url = url + "index.html";
     console.log(url);
 
-    if (url.includes("/post/")) return POSTHandler(request, response);
+    if (url.includes("/post/")) return handlePOST(request, response);
 
     let ok = await checkPath(url);
     if (! ok) return fail(response, NotFound, "URL not found (check case)");
@@ -72,36 +72,39 @@ async function handle(request, response) {
     deliver(response, type, content);
 }
 
-async function POSTHandler(request, response) {
-  await collectRequestData(request, result => {
-    let POSTData = result;
-    let url = request.url;
-    // use the POST url to decide what to do with the data.
-    // e.g. url of "post/newaccount" -> try to create a new account
+async function handlePOST(request, response) {
+  await getRequestData(request, response, deliverPOST);
+};
 
-    console.log(POSTData);
+async function deliverPOST(request, response, result) {
+  let POSTData = result;
+  let url = request.url;
+  // use the POST url to decide what to do with the data.
+  // e.g. url of "post/newaccount" -> try to create a new account
 
-    deliver(response, "text/plain", "aaa");
-  });
+  console.log(POSTData);
+
+  deliver(response, "text/plain", "aaa");
 };
 
 // written with help from:
 // https://itnext.io/how-to-handle-the-post-request-body-in-node-js-without-using-a-framework-cd2038b93190?gi=d6a8f3e99295
-function collectRequestData(request, callback) {
+function getRequestData(request, response, callback) {
   const FORM_URLENCODED = 'application/x-www-form-urlencoded';
+
   if(request.headers['content-type'] === FORM_URLENCODED) {
     let body = '';
     request.on('data', chunk => {
       body += chunk.toString();
     });
     request.on('end', () => {
-      callback(parse(body));
+      callback(request, response, parse(body));
     });
   }
   else {
     callback(null);
-  }
-}
+  };
+};
 
 // Check if a path is in or can be added to the set of site paths, in order
 // to ensure case-sensitivity.
