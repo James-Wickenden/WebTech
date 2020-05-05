@@ -1,5 +1,15 @@
 "use strict";
 
+const statusMode = {
+    ERROR: 0,
+    SUCCESS: 1,
+    MISSING_USERNAME: 2,
+    MISSING_PASSWORD: 3,
+    PASSWORD_MISMATCH: 4,
+    USERNAME_TAKEN: 5,
+    MISSING_FIELD: 6
+};
+
 addEventListener('load', initHandler);
 
 function initHandler() {
@@ -12,52 +22,59 @@ async function addNewUser(event) {
   event.preventDefault();
 
   let form = document.getElementById('account_form');
-  let status = 0;
   let l_status = document.getElementById('l_status');
 
   let all_fields_filled = true;
 
   if (form['l_username'].value == '') {
-    //all_fields_filled = false;
+    all_fields_filled = false;
+    handleStatusLabel(statusMode.MISSING_USERNAME);
   }
   else if (form['l_password_1'].value == '') {
-    //all_fields_filled = false;
+    all_fields_filled = false;
+    handleStatusLabel(statusMode.MISSING_PASSWORD);
   }
   else if (form['l_password_2'].value == '') {
-    //all_fields_filled = false;
+    all_fields_filled = false;
+    handleStatusLabel(statusMode.MISSING_PASSWORD);
+  }
+  else if (form['l_password_1'].value != form['l_password_2'].value) {
+    all_fields_filled = false;
+    handleStatusLabel(statusMode.PASSWORD_MISMATCH);
   };
 
-  if (!all_fields_filled) {
-    updateStatusLabel(l_status, false, "One or more required fields are missing.")
-    return;
-  };
+  if (!all_fields_filled) return;
 
-  updateStatusLabel(l_status, false, "")
-  console.log("Submitting user data to server for validation and account creation...")
+  updateStatusLabel(false, "")
+  console.log("Submitting new user data to server for validation and account creation...")
 
-  requestNewAccount();
+  requestNewAccount(form['l_username'].value, form['l_password_1'].value);
 };
 
 function handleStatusLabel(status) {
   switch (status) {
-    case 1: {
+    case statusMode.SUCCESS: {
       updateStatusLabel(true, "Account registered successfully!");
       break;
     }
-    case 2: {
+    case statusMode.MISSING_USERNAME: {
       updateStatusLabel(false, "Please fill out the Username field.");
       break;
     }
-    case 3: {
+    case statusMode.MISSING_PASSWORD: {
       updateStatusLabel(false, "Please fill out the Password fields.");
       break;
     }
-    case 4: {
+    case statusMode.PASSWORD_MISMATCH: {
       updateStatusLabel(false, "Password fields do not match.");
       break;
     }
-    case 5: {
+    case statusMode.USERNAME_TAKEN: {
       updateStatusLabel(false, "That username is already taken.");
+      break;
+    }
+    case statusMode.MISSING_FIELD: {
+      updateStatusLabel(false, "One or more required fields are missing.");
       break;
     }
     default: {
@@ -75,8 +92,7 @@ function updateStatusLabel(success, message) {
   l_status.innerHTML = message;
 }
 
-async function requestNewAccount() {
-  console.log("Submitting");
+async function requestNewAccount(username, password) {
 
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
@@ -86,16 +102,22 @@ async function requestNewAccount() {
   };
   xhttp.open("POST", "/post/newuser", true);
   xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  xhttp.send(getParams());
+  xhttp.send(getParams(username, password));
 
-  handleStatusLabel(0);
+  updateStatusLabel(true, "Submitting user data to server for validation and account creation...");
 };
 
-function getParams() {
-  return "name=test1&pass=test2";
+function getParams(username, password) {
+  let res = "name=";
+  res += username;
+  res += "&pass=";
+  res += password;
+
+  return res;
 }
 
 async function receive(response) {
-  console.log(response);
-  console.log(response.responseText);
+  //console.log(response);
+  //console.log(response.responseText);
+  handleStatusLabel(parseInt(response.responseText));
 };

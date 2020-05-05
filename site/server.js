@@ -44,6 +44,9 @@ async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
+  //let as = await db.all("select * from users");
+  //console.log(as);
+
   await fs.access(root);
   await fs.access(root + "/index.html");
 
@@ -72,17 +75,45 @@ async function handle(request, response) {
     deliver(response, type, content);
 }
 
+function isEmpty(value){
+  return (value == null || value.length === 0);
+};
+
 async function handlePOST(request, response) {
   await getRequestData(request, response, deliverPOST);
 };
 
+async function tryAddNewAccount(POSTData) {
+  if (isEmpty(POSTData.name)) return 2;
+  if (isEmpty(POSTData.pass)) return 3;
+
+  let ps = await db.prepare("select * from users where username=?;");
+  let as = await ps.all(POSTData.name);
+  if (as.length > 0) return 5;
+
+  try {
+    let today = new Date;
+    let todayStr = today.getFullYear() + "." + (today.getMonth() + 1) + "." + today.getDate();
+
+    let ps_add = await db.prepare("insert into users values (?, ?, ?, false, ?, '', '');");
+    await ps_add.run(undefined, POSTData.name, POSTData.pass, todayStr);
+
+    as = await ps.all(POSTData.name);
+    if (as.length == 1) return 1;
+  } catch (e) { console.log(e); }
+
+  return 0;
+}
+
 async function deliverPOST(request, response, result) {
   let POSTData = result;
   let url = request.url;
-  // use the POST url to decide what to do with the data.
-  // e.g. url of "post/newaccount" -> try to create a new account
+  let status = 0;
 
-  console.log(POSTData);
+  if (url == "/post/newuser") {
+    status = await tryAddNewAccount(POSTData);
+    return deliver(response, "text/plain", String(status));
+  };
 
   deliver(response, "text/plain", "aaa");
 };
