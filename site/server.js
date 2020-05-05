@@ -105,6 +105,18 @@ async function tryAddNewAccount(POSTData) {
   return 0;
 }
 
+async function tryLogin(POSTData) {
+  if (isEmpty(POSTData.name)) return false;
+  if (isEmpty(POSTData.pass)) return false;
+
+  let ps = await db.prepare("select * from users where username=?;");
+  let as = await ps.all(POSTData.name);
+  if (as.length != 1) return false;
+  if (as[0].password != POSTData.pass) return false;
+
+  return true;
+};
+
 async function deliverPOST(request, response, result) {
   let POSTData = result;
   let url = request.url;
@@ -113,6 +125,10 @@ async function deliverPOST(request, response, result) {
   if (url == "/post/newuser") {
     status = await tryAddNewAccount(POSTData);
     return deliver(response, "text/plain", String(status));
+  }
+  else if (url == "/post/login") {
+    let res = await tryLogin(POSTData)
+    return deliver(response, "text/plain", String(res));
   };
 
   deliver(response, "text/plain", "aaa");

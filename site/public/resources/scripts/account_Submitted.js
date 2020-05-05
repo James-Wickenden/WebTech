@@ -104,7 +104,7 @@ async function requestNewAccount(username, password) {
   xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   xhttp.send(getParams(username, password));
 
-  updateStatusLabel(true, "Submitting user data to server for validation and account creation...");
+  updateStatusLabel(false, "");
 };
 
 function getParams(username, password) {
