@@ -53,7 +53,7 @@ async function requestFileSubmission(form) {
 function getParams(form) {
   let res = "userid=";
   res += String(1);
-  res += "&cat=";
+  res += "&cate=";
   res += form["s_cats"].value;
   res += getSpecificParams(form);
   return res;

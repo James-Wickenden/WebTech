@@ -90,7 +90,7 @@ async function tryAddNewAccount(POSTData) {
 
   let ps = await db.prepare("select * from users where username=?;");
   let as = await ps.all(POSTData.name);
-  if (as.length > 0) return 5;
+  if (as.length != 0) return 5;
 
   try {
     let today = new Date;
@@ -99,7 +99,7 @@ async function tryAddNewAccount(POSTData) {
     let ps_add = await db.prepare("insert into users values (?, ?, ?, false, ?, '', '');");
     await ps_add.run(undefined, POSTData.name, POSTData.pass, todayStr);
 
-    as = await ps.all(POSTData.name);
+    let as = await ps.all(POSTData.name);
     if (as.length == 1) return 1;
   } catch (e) { console.log(e); }
 
@@ -112,8 +112,46 @@ async function tryLogin(POSTData) {
 
   let ps = await db.prepare("select * from users where username=?;");
   let as = await ps.all(POSTData.name);
-  if (as.length != 1) return false;
+  if (as.length == 0) return false;
   if (as[0].password != POSTData.pass) return false;
+
+  return true;
+};
+
+async function tryFileUpload(POSTData) {
+  console.log(POSTData);
+  if (isEmpty(POSTData.cate)) return false;
+  if (isEmpty(POSTData.name)) return false;
+  if (isEmpty(POSTData.file)) return false;
+  if (POSTData.desc.length >= 1024) return false;
+
+  //if (isEmpty(POSTData.tags)) return false;
+
+  let ps = await db.prepare("select * from users where user_id=?;");
+  let as = await ps.all(POSTData.userid);
+  if (as.length == 0) return false;
+
+  switch(POSTData.cat) {
+    case "o_map": {
+
+      break;
+    }
+    case "o_config": {
+
+      break;
+    }
+    case "o_model": {
+
+      break;
+    }
+    case "o_other": {
+      if (isEmpty(POSTData.cats)) return false;
+      break;
+    }
+    default: {
+      break;
+    }
+  };
 
   return true;
 };
@@ -121,17 +159,20 @@ async function tryLogin(POSTData) {
 async function deliverPOST(request, response, POSTData) {
   let url = request.url;
 
-  if (url == "/post/newuser") {
+  if (url == "/post") {
+    return fail(response, Error, "Invalid request");
+  }
+  else if (url == "/post/newuser") {
     let status = await tryAddNewAccount(POSTData);
     return deliver(response, "text/plain", String(status));
   }
   else if (url == "/post/login") {
-    let res = await tryLogin(POSTData)
-    return deliver(response, "text/plain", String(res));
+    let status = await tryLogin(POSTData)
+    return deliver(response, "text/plain", String(status));
   }
   else if (url == "/post/content") {
-    console.log(POSTData);
-    return deliver(response, "text/plain", "yes");
+    let status = await tryFileUpload(POSTData)
+    return deliver(response, "text/plain", String(status));
   };
 
 
