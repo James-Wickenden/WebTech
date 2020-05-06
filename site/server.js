@@ -80,10 +80,6 @@ function isEmpty(value){
   return (value == null || value.length === 0);
 };
 
-async function handlePOST(request, response) {
-  await getRequestData(request, response, deliverPOST);
-};
-
 async function tryAddNewAccount(POSTData) {
   if (isEmpty(POSTData.name)) return 2;
   if (isEmpty(POSTData.pass)) return 3;
@@ -118,7 +114,7 @@ async function tryLogin(POSTData) {
   return true;
 };
 
-async function tryFileUpload(POSTData) {
+async function tryFileUpload(POSTData, url) {
   console.log(POSTData);
   if (isEmpty(POSTData.cate)) return false;
   if (isEmpty(POSTData.name)) return false;
@@ -133,7 +129,8 @@ async function tryFileUpload(POSTData) {
 
   switch(POSTData.cat) {
     case "o_map": {
-
+      let screenshots = POSTData.scsh.split("|");
+      if (screenshots.length > 8) return false;
       break;
     }
     case "o_config": {
@@ -170,8 +167,8 @@ async function deliverPOST(request, response, POSTData) {
     let status = await tryLogin(POSTData)
     return deliver(response, "text/plain", String(status));
   }
-  else if (url == "/post/content") {
-    let status = await tryFileUpload(POSTData)
+  else if (url.includes("/post/content")) {
+    let status = await tryFileUpload(POSTData, url)
     return deliver(response, "text/plain", String(status));
   };
 
@@ -179,12 +176,17 @@ async function deliverPOST(request, response, POSTData) {
   deliver(response, "text/plain", "aaa");
 };
 
+async function handlePOST(request, response) {
+  await getRequestData(request, response, deliverPOST);
+};
+
 // written with help from:
 // https://itnext.io/how-to-handle-the-post-request-body-in-node-js-without-using-a-framework-cd2038b93190?gi=d6a8f3e99295
 function getRequestData(request, response, callback) {
   const FORM_URLENCODED = 'application/x-www-form-urlencoded';
 
-  if(request.headers['content-type'] === FORM_URLENCODED) {
+  //if(request.headers['content-type'] === FORM_URLENCODED) {
+  if(true) {
     let body = '';
     request.on('data', chunk => {
       body += chunk.toString();
@@ -194,6 +196,10 @@ function getRequestData(request, response, callback) {
     });
   }
   else {
+    // parse the data using the mulitparty library and scripts from
+    // https://wanago.io/2019/03/25/node-js-typescript-7-creating-a-server-and-receiving-requests/
+    // https://www.npmjs.com/package/multiparty
+    // https://stackoverflow.com/questions/5587973/javascript-upload-file
     callback(null);
   };
 };

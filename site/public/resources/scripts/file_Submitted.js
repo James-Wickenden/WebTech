@@ -37,15 +37,25 @@ function updateStatusLabel(success, message) {
 
 async function requestFileSubmission(form) {
 
-  var xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
+  var xhttp_form = new XMLHttpRequest();
+  xhttp_form.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       receive(this);
     }
   };
-  xhttp.open("POST", "/post/content", true);
-  xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  xhttp.send(getParams(form));
+  xhttp_form.open("POST", "/post/content/form", true);
+  xhttp_form.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  xhttp_form.send(getParams(form));
+
+  var xhttp_data = new XMLHttpRequest();
+  xhttp_data.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      receive(this);
+    }
+  };
+  xhttp_data.open("POST", "/post/content/data", true);
+  xhttp_data.setRequestHeader("Content-Type", "multipart/form-data");
+  xhttp_data.send(getFormData(form));
 
   updateStatusLabel(false, "");
 };
@@ -58,6 +68,25 @@ function getParams(form) {
   res += getSpecificParams(form);
   return res;
 }
+
+function getFormData(form) {
+  let file = form["s_file_map"].files[0];
+  let formData = new FormData();
+
+  formData.append("file", file);
+
+  if (form["s_cats"].value == "o_map") {
+    for (var i = 0; i < form["s_scsh_map"].files.length; ++i) {
+      formData.append("scsh_" + i, form["s_scsh_map"].files[i]);
+    };
+  }
+  else if (form["s_cats"].value == "o_model") {
+    for (var i = 0; i < form["s_scsh_model"].files.length; ++i) {
+      formData.append("scsh_" + i, form["s_scsh_model"].files[i]);
+    };
+  };
+  return formData;
+};
 
 async function receive(response) {
   console.log(response);
