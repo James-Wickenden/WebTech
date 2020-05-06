@@ -16,32 +16,54 @@ async function login(event) {
   let l_status = document.getElementById('l_status');
 
   if (!allFieldsFilled(form)) {
-    updateStatusLabel(l_status, false, "One or more required fields are missing.")
+    updateStatusLabel(false, "One or more required fields are missing.")
     return;
   };
 
   console.log("Submitting login data to server for validation...")
 
-  // TODO:
-  //  send form data to server.js
-  //  perform all validation and database handling server-side for security
-  //  then get back status code for client response
-  //
-  //  e.g. status = server.handle(form);
+  updateStatusLabel(false, "")
+  console.log("Submitting new user data to server for validation and account creation...")
 
-  if (status == 1) {
-    updateStatusLabel(l_status, true, "Upload submitted successfully!");
-  }
-  else {
-    updateStatusLabel(l_status, false, "There was an error in the form submission.");
-  };
+  requestFileSubmission(form);
 };
 
-function updateStatusLabel(l_status, success, message) {
+function updateStatusLabel(success, message) {
+  let l_status = document.getElementById('l_status');
   if (success == true)  l_status.setAttribute("style", "color: green;");
   if (success == false) l_status.setAttribute("style", "color: red;");
   l_status.innerHTML = message;
 }
+
+async function requestFileSubmission(form) {
+
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      receive(this);
+    }
+  };
+  xhttp.open("POST", "/post/newuser", true);
+  xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  xhttp.send(getParams(username, password));
+
+  updateStatusLabel(false, "");
+};
+
+function getParams(form) {
+  let res = "userid=";
+  res += String(1);
+  res += "&cat=";
+  res += password;
+
+  return res;
+}
+
+async function receive(response) {
+  //console.log(response);
+  //console.log(response.responseText);
+  handleStatusLabel(parseInt(response.responseText));
+};
 
 function allFieldsFilled(form) {
 
