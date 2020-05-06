@@ -66,7 +66,7 @@ async function handle(request, response) {
 
     if (url.includes("/post/")) return handlePOST(request, response);
     if (url == "/home") url = "/user.html";
-    
+
     let ok = await checkPath(url);
     if (! ok) return fail(response, NotFound, "URL not found (check case)");
     let type = findType(url);
@@ -118,19 +118,22 @@ async function tryLogin(POSTData) {
   return true;
 };
 
-async function deliverPOST(request, response, result) {
-  let POSTData = result;
+async function deliverPOST(request, response, POSTData) {
   let url = request.url;
-  let status = 0;
 
   if (url == "/post/newuser") {
-    status = await tryAddNewAccount(POSTData);
+    let status = await tryAddNewAccount(POSTData);
     return deliver(response, "text/plain", String(status));
   }
   else if (url == "/post/login") {
     let res = await tryLogin(POSTData)
     return deliver(response, "text/plain", String(res));
+  }
+  else if (url == "/post/content") {
+    console.log(POSTData);
+    return deliver(response, "text/plain", "yes");
   };
+
 
   deliver(response, "text/plain", "aaa");
 };
