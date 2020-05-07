@@ -183,7 +183,7 @@ async function handlePOST(request, response) {
 // written with help from:
 // https://itnext.io/how-to-handle-the-post-request-body-in-node-js-without-using-a-framework-cd2038b93190?gi=d6a8f3e99295
 // multipart parsing was done using the multiparty npm package.
-async function getRequestData(request, response, callback) {
+function getRequestData(request, response, callback) {
   const FORM_URLENCODED = 'application/x-www-form-urlencoded';
   const FORM_MULTIPARTY = "multipart/form-data"
 
@@ -205,10 +205,14 @@ async function getRequestData(request, response, callback) {
     form.uploadDir = uploadsDir;
 
     form.parse(request, function(err, fields, files) {
-      Object.keys(files).forEach(function(name) {
-        console.log("Got a file named " + name);
+      let keys = Object.keys(files);
+      console.log(keys);
+      Object.keys(files).forEach(async function(name) {
+        path = files[name][0].path;
+        filename = files[name][0].originalFilename;
+        await fs.rename(path, uploadsDir + filename);
       });
-      console.log(files);
+      //console.log(files);
       console.log('Upload completed!');
     });
     callback(request, response, uploadsDir);
