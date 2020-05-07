@@ -19,11 +19,15 @@ let http = require("http");
 let fs = require("fs").promises;
 var sqlite = require("sqlite");
 var multiparty = require('multiparty');
-var mkdirp = require('mkdirp');
 var {parse} = require('querystring');
 
+// file handling packages
+var mkdirp = require('mkdirp');
+var rimraf = require("rimraf");
+var ncp = require('ncp').ncp;
+
 var db;
-var tmp;
+var tmp = "";
 
 // Start the server:
 start();
@@ -39,8 +43,8 @@ async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
-  //let as = await db.all("select * from users");
-  //console.log(as);
+  let as = await db.all("select * from uploads");
+  console.log(as);
 
   await fs.access(root);
   await fs.access(root + "/index.html");
@@ -75,6 +79,12 @@ function isEmpty(value){
   return (value == null || value.length === 0);
 };
 
+function getToday() {
+  let today = new Date;
+  let todayStr = today.getFullYear() + "." + (today.getMonth() + 1) + "." + today.getDate();
+  return todayStr;
+};
+
 async function tryAddNewAccount(POSTData) {
   if (isEmpty(POSTData.name)) return 2;
   if (isEmpty(POSTData.pass)) return 3;
@@ -84,11 +94,9 @@ async function tryAddNewAccount(POSTData) {
   if (as.length != 0) return 5;
 
   try {
-    let today = new Date;
-    let todayStr = today.getFullYear() + "." + (today.getMonth() + 1) + "." + today.getDate();
 
     let ps_add = await db.prepare("insert into users values (?, ?, ?, false, ?, '', '');");
-    await ps_add.run(undefined, POSTData.name, POSTData.pass, todayStr);
+    await ps_add.run(undefined, POSTData.name, POSTData.pass, getToday());
 
     let as = await ps.all(POSTData.name);
     if (as.length == 1) return 1;
@@ -109,7 +117,7 @@ async function tryLogin(POSTData) {
   return true;
 };
 
-async function tryFileUpload(POSTData, url) {
+async function tryFileUpload_Form(POSTData, url) {
   if (isEmpty(POSTData.cate)) return false;
   if (isEmpty(POSTData.name)) return false;
   if (isEmpty(POSTData.file)) return false;
@@ -147,7 +155,40 @@ async function tryFileUpload(POSTData, url) {
     }
   };
 
+  let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, 0, 0, '');");
+  await ps_add.run(undefined, 0, POSTData.name, POSTData.cate, POSTData.cats, getToday(), POSTData.desc);
   tmp = POSTData.name;
+  return true;
+};
+
+async function tryFileUpload_Data(files) {
+  let uploadsTemp = process.cwd() + "\\upload_temp\\";
+  let uploadsDir  = process.cwd() + "\\uploads\\" + tmp + "\\";
+  mkdirp.sync(uploadsDir);
+
+  Object.keys(files).forEach(async function(name) {
+    path = files[name][0].path;
+    filename = files[name][0].originalFilename;
+    await fs.rename(path, uploadsTemp + filename);
+  });
+
+  let validUpload = await validateTempUpload(files, uploadsDir);
+  if (!validUpload) return false;
+
+  ncp(uploadsTemp, uploadsDir);
+  await rimraf(uploadsTemp, function () { console.log("Deleted temp upload folder."); });
+  tmp = "";
+  console.log('Upload completed!');
+  return true;
+};
+
+async function validateTempUpload(files, uploadsDir) {
+  let ps = await db.prepare("select * from uploads where name=?;");
+  let as = await ps.all(tmp);
+
+  if (as.length != 1) return false;
+  if (await fs.readdir(uploadsDir).length > 0) return false;
+
   return true;
 };
 
@@ -166,18 +207,20 @@ async function deliverPOST(request, response, POSTData) {
     return deliver(response, "text/plain", String(status));
   }
   else if (url == "/post/content/form") {
-    let status = await tryFileUpload(POSTData, url)
+    let status = await tryFileUpload_Form(POSTData, url);
+    if (!status) console.log("Invalid attempt to submit upload denied.");
     return deliver(response, "text/plain", String(status));
   }
   else if (url == "/post/content/data") {
-    console.log(POSTData);
+    let status = await tryFileUpload_Data(POSTData);
+    return deliver(response, "text/plain", String(status));
   };
 
   deliver(response, "text/plain", "aaa");
 };
 
 async function handlePOST(request, response) {
-  await getRequestData(request, response, deliverPOST);
+  getRequestData(request, response, deliverPOST);
 };
 
 // written with help from:
@@ -200,22 +243,13 @@ function getRequestData(request, response, callback) {
   else if (request.headers['content-type'].includes(FORM_MULTIPARTY)) {
     // this section handles multipart/form-data post requests.
     let form = new multiparty.Form();
-    let uploadsDir = process.cwd() + "\\uploads\\" + tmp + "\\";
-    mkdirp.sync(uploadsDir);
-    form.uploadDir = uploadsDir;
+    let uploadsTemp = process.cwd() + "\\upload_temp\\";
+    mkdirp.sync(uploadsTemp);
+    form.uploadDir = uploadsTemp;
 
-    form.parse(request, function(err, fields, files) {
-      let keys = Object.keys(files);
-      console.log(keys);
-      Object.keys(files).forEach(async function(name) {
-        path = files[name][0].path;
-        filename = files[name][0].originalFilename;
-        await fs.rename(path, uploadsDir + filename);
-      });
-      //console.log(files);
-      console.log('Upload completed!');
+    form.parse(request, async function(err, fields, files) {
+      callback(request, response, files);
     });
-    callback(request, response, uploadsDir);
   }
   else {
     callback(null);

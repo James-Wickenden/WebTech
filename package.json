@@ -3,6 +3,8 @@
   "dependencies": {
     "mkdirp": "^1.0.4",
     "multiparty": "^4.2.1",
+    "ncp": "^2.0.0",
+    "rimraf": "^3.0.2",
     "sqlite": "^3.0.6"
   }
 }

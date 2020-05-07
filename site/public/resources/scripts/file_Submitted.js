@@ -91,12 +91,26 @@ async function receiveForm(response) {
   if (response.responseText == "true") {
     console.log("Upload approved. Sending data...")
     await sendFormData();
+  }
+  else {
+    console.log("Upload not approved.");
+    updateStatusLabel(false, "The upload was not successful.");
+    // TODO: use statuscodes to deliver informative fail messages
   };
 };
 
 async function receiveData(response) {
-  console.log(response);
-  console.log(response.responseText);
+  //console.log(response);
+  //console.log(response.responseText);
+  if (response.responseText == "true") {
+    console.log("Upload successful.")
+    window.location = "/map.html";
+  }
+  else {
+    console.log("Upload not successful.");
+    updateStatusLabel(false, "The upload failed due to an unexpected error.");
+    // TODO: use statuscodes to deliver informative fail messages
+  };
 };
 
 async function sendFormData() {

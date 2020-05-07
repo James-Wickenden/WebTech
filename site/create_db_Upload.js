@@ -14,12 +14,12 @@ async function create() {
 
         as = await db.all("select * from uploads where upload_id=1;");
         if (as.length==0) {
-          await db.run("insert into uploads values (1, 1, 'Maptest', 'Map', '', '28/04/2020', 'Test Map Description', 10, 5, '');");
+          await db.run("insert into uploads values (1, 1, 'Maptest', 'o_map', null, '28/04/2020', 'Test Map Description', 10, 5, '');");
         }
 
         as = await db.all("select * from uploads where upload_id=2;");
         if (as.length==0) {
-          await db.run("insert into uploads values (2, 1, 'Othertest', 'Other', 'Demo', '29/04/2020', 'Test Demo Description', 20, 10, '');");
+          await db.run("insert into uploads values (2, 1, 'Othertest', 'o_other', 'Demo', '29/04/2020', 'Test Demo Description', 20, 10, '');");
         }
 
         as = await db.all("select * from uploads;");
