@@ -10,29 +10,20 @@
 // negotiation is not implemented, so old browsers are not supported. Https is
 // not supported. Add to the list of file types in defineTypes, as necessary.
 
-// Change the port to the default 80, if there are no permission issues and port
-// 80 isn't already in use. The root folder corresponds to the "/" url.
-let port = 8080;
+let port = 80;
 let root = "./public"
-
-// Load the library modules, and define the global constants and variables.
-// Load the promises version of fs, so that async/await can be used.
-// See http://en.wikipedia.org/wiki/List_of_HTTP_status_codes.
-// The file types supported are set up in the defineTypes function.
-// The paths variable is a cache of url paths in the site, to check case.
-let http = require("http");
 let OK = 200, NotFound = 404, BadType = 415, Error = 500;
 let types, paths;
 
-var fs = require("fs").promises;
+let http = require("http");
+let fs = require("fs").promises;
 var sqlite = require("sqlite");
-var db;
-
 var multiparty = require('multiparty');
-var util = require('util');
 var mkdirp = require('mkdirp');
+var {parse} = require('querystring');
 
-const { parse } = require('querystring');
+var db;
+var tmp;
 
 // Start the server:
 start();
@@ -119,17 +110,19 @@ async function tryLogin(POSTData) {
 };
 
 async function tryFileUpload(POSTData, url) {
-  //console.log(POSTData);
   if (isEmpty(POSTData.cate)) return false;
   if (isEmpty(POSTData.name)) return false;
   if (isEmpty(POSTData.file)) return false;
   if (POSTData.desc.length >= 1024) return false;
-
   //if (isEmpty(POSTData.tags)) return false;
 
   let ps = await db.prepare("select * from users where user_id=?;");
   let as = await ps.all(POSTData.userid);
   if (as.length == 0) return false;
+
+  ps = await db.prepare("select * from uploads where name=?;");
+  as = await ps.all(POSTData.name);
+  if (as.length != 0) return false;
 
   switch(POSTData.cat) {
     case "o_map": {
@@ -154,6 +147,7 @@ async function tryFileUpload(POSTData, url) {
     }
   };
 
+  tmp = POSTData.name;
   return true;
 };
 
@@ -188,11 +182,13 @@ async function handlePOST(request, response) {
 
 // written with help from:
 // https://itnext.io/how-to-handle-the-post-request-body-in-node-js-without-using-a-framework-cd2038b93190?gi=d6a8f3e99295
+// multipart parsing was done using the multiparty npm package.
 async function getRequestData(request, response, callback) {
   const FORM_URLENCODED = 'application/x-www-form-urlencoded';
   const FORM_MULTIPARTY = "multipart/form-data"
+
   if(request.headers['content-type'] === FORM_URLENCODED) {
-  //if(true) {
+    // this section handles application/x-www-form-urlencoded post requests.
     let body = '';
     request.on('data', chunk => {
       body += chunk.toString();
@@ -202,15 +198,17 @@ async function getRequestData(request, response, callback) {
     });
   }
   else if (request.headers['content-type'].includes(FORM_MULTIPARTY)) {
+    // this section handles multipart/form-data post requests.
     let form = new multiparty.Form();
-    let uploadsDir = process.cwd() + "\\uploads\\";
-    let made = mkdirp.sync(uploadsDir);
+    let uploadsDir = process.cwd() + "\\uploads\\" + tmp + "\\";
+    mkdirp.sync(uploadsDir);
     form.uploadDir = uploadsDir;
 
     form.parse(request, function(err, fields, files) {
       Object.keys(files).forEach(function(name) {
         console.log("Got a file named " + name);
       });
+      console.log(files);
       console.log('Upload completed!');
     });
     callback(request, response, uploadsDir);
