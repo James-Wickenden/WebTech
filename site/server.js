@@ -21,15 +21,16 @@ let root = "./public"
 // The file types supported are set up in the defineTypes function.
 // The paths variable is a cache of url paths in the site, to check case.
 let http = require("http");
-let fs = require("fs").promises;
 let OK = 200, NotFound = 404, BadType = 415, Error = 500;
 let types, paths;
 
+var fs = require("fs").promises;
 var sqlite = require("sqlite");
 var db;
 
 var multiparty = require('multiparty');
 var util = require('util');
+var mkdirp = require('mkdirp');
 
 const { parse } = require('querystring');
 
@@ -173,8 +174,10 @@ async function deliverPOST(request, response, POSTData) {
   else if (url == "/post/content/form") {
     let status = await tryFileUpload(POSTData, url)
     return deliver(response, "text/plain", String(status));
+  }
+  else if (url == "/post/content/data") {
+    console.log(POSTData);
   };
-
 
   deliver(response, "text/plain", "aaa");
 };
@@ -185,7 +188,7 @@ async function handlePOST(request, response) {
 
 // written with help from:
 // https://itnext.io/how-to-handle-the-post-request-body-in-node-js-without-using-a-framework-cd2038b93190?gi=d6a8f3e99295
-function getRequestData(request, response, callback) {
+async function getRequestData(request, response, callback) {
   const FORM_URLENCODED = 'application/x-www-form-urlencoded';
   const FORM_MULTIPARTY = "multipart/form-data"
   if(request.headers['content-type'] === FORM_URLENCODED) {
@@ -198,80 +201,24 @@ function getRequestData(request, response, callback) {
       callback(request, response, parse(body));
     });
   }
-  else if (request.headers['content-type'] === FORM_MULTIPARTY) {
-    var form = new multiparty.Form();
-/*
+  else if (request.headers['content-type'].includes(FORM_MULTIPARTY)) {
+    let form = new multiparty.Form();
+    let uploadsDir = process.cwd() + "\\uploads\\";
+    let made = mkdirp.sync(uploadsDir);
+    form.uploadDir = uploadsDir;
+
     form.parse(request, function(err, fields, files) {
-      response.writeHead(200, {'content-type': 'text/plain'});
-      response.write('received upload:\n\n');
-      response.end(util.inspect({fields: fields, files: files}));
+      Object.keys(files).forEach(function(name) {
+        console.log("Got a file named " + name);
+      });
+      console.log('Upload completed!');
     });
-    console.log(form.get("file"));
-    return;
-*/
-///*
-    form.parse(request);
-    const fields = new Map();
-    let photoBuffer;
-    let filename;
-
-    form.on('part', async function(part) {
-      if (!part.filename) {
-        await handleFieldPart(part, fields);
-        part.resume();
-      }
-      if (part.filename) {
-        filename = part.filename;
-        photoBuffer = await getDataFromStream(part);
-      }
-    });
-
-    form.on('close', () => {
-      callback(request, response, parse(fields))
-    });
-//*/
-    // parse the data using the mulitparty library and scripts from
-    // https://wanago.io/2019/03/25/node-js-typescript-7-creating-a-server-and-receiving-requests/
-    // https://www.npmjs.com/package/multiparty
-    // https://stackoverflow.com/questions/5587973/javascript-upload-file
-    //return deliver(response, "text/plain", "recv");;
-    //callback(request, response, parse(body));
+    callback(request, response, uploadsDir);
   }
   else {
     callback(null);
   };
 };
-
-function getDataFromStream(stream) {
-  return new Promise(resolve => {
-    const chunks = [];
-    stream.on('data', (chunk) => {
-      chunks.push(chunk);
-    });
-    stream.on('end', () => {
-      resolve(
-        Buffer.concat(chunks)
-      )
-    });
-  })
-}
-
-function handleWriting(fields, photoBuffer, filename) {
-  writeFile(
-    `files/${fields.get('firstName')}-${fields.get('lastName')}-${filename}`,
-    photoBuffer,
-    () => {
-      console.log(`${fields.get('firstName')} ${fields.get('lastName')} uploaded a file`);
-    }
-  );
-}
-
-async function handleFieldPart(part, fields) {
-  return getDataFromStream(part)
-    .then(value => {
-      fields.set(part.name, value.toString());
-    })
-}
 
 // Check if a path is in or can be added to the set of site paths, in order
 // to ensure case-sensitivity.

@@ -109,7 +109,7 @@ async function sendFormData() {
     }
   };
   xhttp_data.open("POST", "/post/content/data", true);
-  xhttp_data.setRequestHeader("Content-Type", "multipart/form-data");
+  //xhttp_data.setRequestHeader("Content-Type", "multipart/form-data");
   let formData = getFormData(form);
   //console.log(formData.get("file"));
   xhttp_data.send(formData);
