@@ -118,7 +118,7 @@ async function tryLogin(POSTData) {
 };
 
 async function tryFileUpload(POSTData, url) {
-  console.log(POSTData);
+  //console.log(POSTData);
   if (isEmpty(POSTData.cate)) return false;
   if (isEmpty(POSTData.name)) return false;
   if (isEmpty(POSTData.file)) return false;
@@ -200,15 +200,17 @@ function getRequestData(request, response, callback) {
   }
   else if (request.headers['content-type'] === FORM_MULTIPARTY) {
     var form = new multiparty.Form();
-
+/*
     form.parse(request, function(err, fields, files) {
       response.writeHead(200, {'content-type': 'text/plain'});
       response.write('received upload:\n\n');
       response.end(util.inspect({fields: fields, files: files}));
     });
-    console.log(form);
+    console.log(form.get("file"));
     return;
-/*
+*/
+///*
+    form.parse(request);
     const fields = new Map();
     let photoBuffer;
     let filename;
@@ -224,12 +226,18 @@ function getRequestData(request, response, callback) {
       }
     });
 
-    form.on('close', () => handleWriting(fields, photoBuffer, filename));
-*/
+    form.on('close', () => {
+      callback(request, response, parse(fields))
+    });
+//*/
     // parse the data using the mulitparty library and scripts from
     // https://wanago.io/2019/03/25/node-js-typescript-7-creating-a-server-and-receiving-requests/
     // https://www.npmjs.com/package/multiparty
     // https://stackoverflow.com/questions/5587973/javascript-upload-file
+    //return deliver(response, "text/plain", "recv");;
+    //callback(request, response, parse(body));
+  }
+  else {
     callback(null);
   };
 };
