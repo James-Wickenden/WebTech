@@ -20,10 +20,8 @@ async function login(event) {
     return;
   };
 
-  console.log("Submitting login data to server for validation...")
-
+  console.log("Submitting file submission to server for validation...")
   updateStatusLabel(false, "")
-  console.log("Submitting new user data to server for validation and account creation...")
 
   requestFileSubmission(form);
 };
@@ -40,22 +38,12 @@ async function requestFileSubmission(form) {
   var xhttp_form = new XMLHttpRequest();
   xhttp_form.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-      receive(this);
+      receiveForm(this);
     }
   };
   xhttp_form.open("POST", "/post/content/form", true);
   xhttp_form.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   xhttp_form.send(getParams(form));
-
-  var xhttp_data = new XMLHttpRequest();
-  xhttp_data.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      receive(this);
-    }
-  };
-  xhttp_data.open("POST", "/post/content/data", true);
-  xhttp_data.setRequestHeader("Content-Type", "multipart/form-data");
-  xhttp_data.send(getFormData(form));
 
   updateStatusLabel(false, "");
 };
@@ -70,8 +58,16 @@ function getParams(form) {
 }
 
 function getFormData(form) {
-  let file = form["s_file_map"].files[0];
   let formData = new FormData();
+  let file;
+
+  switch(form["s_cats"].value) {
+    case "o_map": file = form["s_file_map"].files[0]; break;
+    case "o_config": file = form["s_file_config"].files[0]; break;
+    case "o_model": file = form["s_file_model"].files[0]; break;
+    case "o_other": file = form["s_file_other"].files[0]; break;
+    default: console.log(form["s_cats"].value); break;
+  };
 
   formData.append("file", file);
 
@@ -85,13 +81,39 @@ function getFormData(form) {
       formData.append("scsh_" + i, form["s_scsh_model"].files[i]);
     };
   };
+
   return formData;
 };
 
-async function receive(response) {
+async function receiveForm(response) {
+  //console.log(response);
+  //console.log(response.responseText);
+  if (response.responseText == "true") {
+    console.log("Upload approved. Sending data...")
+    await sendFormData();
+  };
+};
+
+async function receiveData(response) {
   console.log(response);
   console.log(response.responseText);
 };
+
+async function sendFormData() {
+  let form = document.getElementById("upload_form");
+
+  var xhttp_data = new XMLHttpRequest();
+  xhttp_data.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      receiveData(this);
+    }
+  };
+  xhttp_data.open("POST", "/post/content/data", true);
+  xhttp_data.setRequestHeader("Content-Type", "multipart/form-data");
+  let formData = getFormData(form);
+  //console.log(formData.get("file"));
+  xhttp_data.send(formData);
+}
 
 function getSpecificParams(form) {
   let res = "";

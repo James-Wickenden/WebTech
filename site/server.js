@@ -28,6 +28,9 @@ let types, paths;
 var sqlite = require("sqlite");
 var db;
 
+var multiparty = require('multiparty');
+var util = require('util');
+
 const { parse } = require('querystring');
 
 // Start the server:
@@ -167,7 +170,7 @@ async function deliverPOST(request, response, POSTData) {
     let status = await tryLogin(POSTData)
     return deliver(response, "text/plain", String(status));
   }
-  else if (url.includes("/post/content")) {
+  else if (url == "/post/content/form") {
     let status = await tryFileUpload(POSTData, url)
     return deliver(response, "text/plain", String(status));
   };
@@ -184,9 +187,9 @@ async function handlePOST(request, response) {
 // https://itnext.io/how-to-handle-the-post-request-body-in-node-js-without-using-a-framework-cd2038b93190?gi=d6a8f3e99295
 function getRequestData(request, response, callback) {
   const FORM_URLENCODED = 'application/x-www-form-urlencoded';
-
-  //if(request.headers['content-type'] === FORM_URLENCODED) {
-  if(true) {
+  const FORM_MULTIPARTY = "multipart/form-data"
+  if(request.headers['content-type'] === FORM_URLENCODED) {
+  //if(true) {
     let body = '';
     request.on('data', chunk => {
       body += chunk.toString();
@@ -195,7 +198,34 @@ function getRequestData(request, response, callback) {
       callback(request, response, parse(body));
     });
   }
-  else {
+  else if (request.headers['content-type'] === FORM_MULTIPARTY) {
+    var form = new multiparty.Form();
+
+    form.parse(request, function(err, fields, files) {
+      response.writeHead(200, {'content-type': 'text/plain'});
+      response.write('received upload:\n\n');
+      response.end(util.inspect({fields: fields, files: files}));
+    });
+    console.log(form);
+    return;
+/*
+    const fields = new Map();
+    let photoBuffer;
+    let filename;
+
+    form.on('part', async function(part) {
+      if (!part.filename) {
+        await handleFieldPart(part, fields);
+        part.resume();
+      }
+      if (part.filename) {
+        filename = part.filename;
+        photoBuffer = await getDataFromStream(part);
+      }
+    });
+
+    form.on('close', () => handleWriting(fields, photoBuffer, filename));
+*/
     // parse the data using the mulitparty library and scripts from
     // https://wanago.io/2019/03/25/node-js-typescript-7-creating-a-server-and-receiving-requests/
     // https://www.npmjs.com/package/multiparty
@@ -203,6 +233,37 @@ function getRequestData(request, response, callback) {
     callback(null);
   };
 };
+
+function getDataFromStream(stream) {
+  return new Promise(resolve => {
+    const chunks = [];
+    stream.on('data', (chunk) => {
+      chunks.push(chunk);
+    });
+    stream.on('end', () => {
+      resolve(
+        Buffer.concat(chunks)
+      )
+    });
+  })
+}
+
+function handleWriting(fields, photoBuffer, filename) {
+  writeFile(
+    `files/${fields.get('firstName')}-${fields.get('lastName')}-${filename}`,
+    photoBuffer,
+    () => {
+      console.log(`${fields.get('firstName')} ${fields.get('lastName')} uploaded a file`);
+    }
+  );
+}
+
+async function handleFieldPart(part, fields) {
+  return getDataFromStream(part)
+    .then(value => {
+      fields.set(part.name, value.toString());
+    })
+}
 
 // Check if a path is in or can be added to the set of site paths, in order
 // to ensure case-sensitivity.
