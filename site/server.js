@@ -17,7 +17,7 @@ let types, paths;
 
 let http = require("http");
 let fs = require("fs").promises;
-let fs_async = require("fs");
+let fs_sync = require("fs");
 var sqlite = require("sqlite");
 var multiparty = require('multiparty');
 var {parse} = require('querystring');
@@ -68,6 +68,7 @@ async function handle(request, response) {
     console.log(url);
 
     if (url == "/home") url = "/user.html";
+    if (url.includes("/download/")) return tryDownload(request, response);
     if (url.includes("/post/")) return handlePOST(request, response);
     if (url.includes("/map/"))  return handleContent(request, response);
     // TODO: Handle urls without .html extensions
@@ -200,16 +201,21 @@ async function validateTempUpload(files, uploadsDir) {
   return as[0];
 };
 
-async function tryDownload(response, POSTdata) {
-  let contentid = POSTdata.contentid;
-  console.log(contentid);
+async function tryDownload(request, response) {
+  let contentid = parseInt(request.url.split("/").pop());
+  console.log("Attempting to download content with id=" + contentid);
 
   let ps = await db.prepare("select * from uploads where upload_id=?;");
   let content = await ps.get(contentid);
   if (isEmpty(content)) return fail(response, Error, "No such upload found with that id");
 
-  let uploadsDir  = process.cwd() + "\\uploads\\" + content.name + "\\";
-  let filestream = fs_async.createReadStream(uploadsDir + content.filename);
+  let filepath  = process.cwd() + "\\uploads\\" + content.name + "\\"  + content.filename;
+  if (!fs_sync.existsSync(filepath)) {
+    console.log("Error: the associated file for id=" + contentid + " was not found.");
+    return;
+  }
+
+  let filestream = fs_sync.createReadStream(filepath);
 
   response.writeHead(200, {
         "Content-disposition": "attachment;filename=" + content.filename
@@ -240,9 +246,6 @@ async function deliverPOST(request, response, POSTData) {
   else if (url == "/post/content/data") {
     let status = await tryFileUpload_Data(POSTData);
     return deliver(response, "text/plain", String(status));
-  }
-  else if (url == "/post/download") {
-    return tryDownload(response, POSTData);
   };
 
   deliver(response, "text/plain", "POST url not recognised.");
@@ -269,9 +272,9 @@ async function handleContent(request, response) {
   let ts = template.split("$");
 
   let page = ts[0] + content.name + ts[1] + user.username + ts[2];
-  page += content.no_downloads + ts[3] + content.no_favourites + ts[4];
-  page += content.description + ts[5] + content.upload_date + ts[6];
-  page += content.comments.length + ts[7] + content.comments + ts[8];
+  page += content.no_downloads + ts[3] + content.no_favourites + ts[4] + content.upload_id + ts[5];
+  page += content.description + ts[6] + content.upload_date + ts[7];
+  page += content.comments.length + ts[8] + content.comments + ts[9];
 
   // TODO: add image handling using:
   // https://stackoverflow.com/questions/5823722/how-to-serve-an-image-using-nodejs

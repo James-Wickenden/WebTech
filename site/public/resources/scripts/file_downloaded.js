@@ -1,5 +1,5 @@
 "use strict";
-
+/*
 addEventListener('load', initHandler);
 
 function initHandler() {
@@ -32,3 +32,4 @@ async function receiveFile(response) {
   //  type: "text/plain;charset=utf-8"
   //});
 };
+*/
