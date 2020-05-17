@@ -43,9 +43,11 @@ async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
-  //let as = await db.all("select * from uploads");
-  //console.log(as);
-  //await rimraf(uploadsTemp, function () { console.log("Deleted temp upload folder."); });
+  let as = await db.all("select * from uploads");
+  console.log(as);
+
+  let uploadsTemp  = process.cwd() + "\\upload_temp\\";
+  mkdirp.sync(uploadsTemp);
 
   await fs.access(root);
   await fs.access(root + "/index.html");
@@ -157,9 +159,9 @@ async function tryFileUpload_Form(POSTData, url) {
       break;
     }
   };
-
-  let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, 0, 0, '');");
-  await ps_add.run(undefined, 0, POSTData.name, POSTData.cate, POSTData.cats, getToday(), POSTData.desc);
+  
+  let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, '');");
+  await ps_add.run(undefined, 0, POSTData.name, POSTData.file, POSTData.cate, POSTData.cats, getToday(), POSTData.desc);
   tmp = POSTData.name;
   return true;
 };
@@ -191,8 +193,8 @@ async function validateTempUpload(files, uploadsDir) {
   let ps = await db.prepare("select * from uploads where name=?;");
   let as = await ps.all(tmp);
 
-  if (as.length != 1) return false;
-  if (await fs.readdir(uploadsDir).length > 0) return -1;
+  if (as.length != 1) return -1;
+  //if (await fs.readdir(uploadsDir).length > 0) return -1;
 
   return as[0];
 };
@@ -256,9 +258,10 @@ function getRequestData(request, response, callback) {
   else if (request.headers['content-type'].includes(FORM_MULTIPARTY)) {
     // this section handles multipart/form-data post requests.
     let form = new multiparty.Form();
-    let uploadsTemp = process.cwd() + "\\upload_temp\\";
-    mkdirp.sync(uploadsTemp);
-    form.uploadDir = uploadsTemp;
+
+    let uploadsDir  = process.cwd() + "\\uploads\\" + tmp + "\\";
+    mkdirp.sync(uploadsDir);
+    form.uploadDir = uploadsDir;
 
     form.parse(request, async function(err, fields, files) {
       callback(request, response, files);
