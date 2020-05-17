@@ -100,16 +100,14 @@ async function receiveForm(response) {
 };
 
 async function receiveData(response) {
-  //console.log(response);
-  //console.log(response.responseText);
-  if (response.responseText == "true") {
-    console.log("Upload successful.")
-    window.location = "/map.html";
-  }
-  else {
+  if (response.responseText == -1) {
     console.log("Upload not successful.");
     updateStatusLabel(false, "The upload failed due to an unexpected error.");
     // TODO: use statuscodes to deliver informative fail messages
+  }
+  else {
+    console.log("Upload successful.")
+    window.location = "/map/" + response.responseText;
   };
 };
 

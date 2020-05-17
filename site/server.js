@@ -10,7 +10,7 @@
 // negotiation is not implemented, so old browsers are not supported. Https is
 // not supported. Add to the list of file types in defineTypes, as necessary.
 
-let port = 80;
+let port = 8080;
 let root = "./public"
 let OK = 200, NotFound = 404, BadType = 415, Error = 500;
 let types, paths;
@@ -43,8 +43,9 @@ async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
-  let as = await db.all("select * from uploads");
-  console.log(as);
+  //let as = await db.all("select * from uploads");
+  //console.log(as);
+  //await rimraf(uploadsTemp, function () { console.log("Deleted temp upload folder."); });
 
   await fs.access(root);
   await fs.access(root + "/index.html");
@@ -63,8 +64,10 @@ async function handle(request, response) {
     if (url.endsWith("/")) url = url + "index.html";
     console.log(url);
 
-    if (url.includes("/post/")) return handlePOST(request, response);
     if (url == "/home") url = "/user.html";
+    if (url.includes("/post/")) return handlePOST(request, response);
+    if (url.includes("/map/"))  return handleContent(request, response);
+    // TODO: Handle urls without .html extensions
 
     let ok = await checkPath(url);
     if (! ok) return fail(response, NotFound, "URL not found (check case)");
@@ -162,24 +165,26 @@ async function tryFileUpload_Form(POSTData, url) {
 };
 
 async function tryFileUpload_Data(files) {
-  let uploadsTemp = process.cwd() + "\\upload_temp\\";
+  if (tmp == "") {
+    console.log("No local directory found; was data uploaded without a reference form beforehand?")
+    return -1;
+  };
+
   let uploadsDir  = process.cwd() + "\\uploads\\" + tmp + "\\";
   mkdirp.sync(uploadsDir);
+
+  let validUpload = await validateTempUpload(files, uploadsDir);
+  if (validUpload == -1) return -1;
 
   Object.keys(files).forEach(async function(name) {
     path = files[name][0].path;
     filename = files[name][0].originalFilename;
-    await fs.rename(path, uploadsTemp + filename);
+    await fs.rename(path, uploadsDir + filename);
   });
 
-  let validUpload = await validateTempUpload(files, uploadsDir);
-  if (!validUpload) return false;
-
-  ncp(uploadsTemp, uploadsDir);
-  await rimraf(uploadsTemp, function () { console.log("Deleted temp upload folder."); });
   tmp = "";
   console.log('Upload completed!');
-  return true;
+  return validUpload.upload_id;
 };
 
 async function validateTempUpload(files, uploadsDir) {
@@ -187,9 +192,9 @@ async function validateTempUpload(files, uploadsDir) {
   let as = await ps.all(tmp);
 
   if (as.length != 1) return false;
-  if (await fs.readdir(uploadsDir).length > 0) return false;
+  if (await fs.readdir(uploadsDir).length > 0) return -1;
 
-  return true;
+  return as[0];
 };
 
 async function deliverPOST(request, response, POSTData) {
@@ -216,11 +221,19 @@ async function deliverPOST(request, response, POSTData) {
     return deliver(response, "text/plain", String(status));
   };
 
-  deliver(response, "text/plain", "aaa");
+  deliver(response, "text/plain", "POST url not recognised.");
 };
 
 async function handlePOST(request, response) {
-  getRequestData(request, response, deliverPOST);
+  await getRequestData(request, response, deliverPOST);
+};
+
+async function handleContent(request, response) {
+  console.log("Handling content request");
+  let url = request.url;
+  let content_id = url.split("/").pop();
+  console.log(content_id);
+
 };
 
 // written with help from:
