@@ -64,17 +64,23 @@ async function start() {
 // Serve a request by delivering a file.
 async function handle(request, response) {
     let url = request.url;
-    if (url.endsWith("/")) url = url + "index.html";
+    //if (url.endsWith("/")) url = url + "index.html";
     console.log(url);
 
     if (url == "/home") url = "/user.html";
-    if (url.includes("/download/")) return tryDownload(request, response);
+    if (url == "/" || url == "/maps" || url == "/configs" || url == "/models" || url == "/other"){
+      return handleMain(request, response);
+    };
+    if (url.includes("/download/")) return handleDownload(request, response);
     if (url.includes("/post/")) return handlePOST(request, response);
-    if (url.includes("/map/"))  return handleContent(request, response);
-    // TODO: Handle urls without .html extensions
+    if (url.includes("/content/")) return handleContent(request, response);
+
+    if (url == "/upload") url = "/upload.html";
+    if (url == "/login") url = "/login.html";
+    if (url == "/createaccount") url = "/create_account.html";
 
     let ok = await checkPath(url);
-    if (! ok) return fail(response, NotFound, "URL not found (check case)");
+    if (! ok) return fail(response, NotFound, "URL not found.");
     let type = findType(url);
     if (type == null) return fail(response, BadType, "File type not supported");
     let file = root + url;
@@ -201,7 +207,7 @@ async function validateTempUpload(files, uploadsDir) {
   return as[0];
 };
 
-async function tryDownload(request, response) {
+async function handleDownload(request, response) {
   let contentid = parseInt(request.url.split("/").pop());
   console.log("Attempting to download content with id=" + contentid);
 
@@ -216,7 +222,6 @@ async function tryDownload(request, response) {
   }
 
   let filestream = fs_sync.createReadStream(filepath);
-
   response.writeHead(200, {
         "Content-disposition": "attachment;filename=" + content.filename
     });
@@ -267,7 +272,7 @@ async function handleContent(request, response) {
   let user = await ps_user.get(content.user_id);
   if (isEmpty(user)) return fail(response, Error, "Database error; uploaded content has no associated user.");
 
-  let template = await fs.readFile("./public/map.html","utf8");
+  let template = await fs.readFile(root + "/map.html","utf8");
   if (isEmpty(template)) return fail(response, Error, "Content file not found.");
   let ts = template.split("$");
 
@@ -278,6 +283,25 @@ async function handleContent(request, response) {
 
   // TODO: add image handling using:
   // https://stackoverflow.com/questions/5823722/how-to-serve-an-image-using-nodejs
+  deliver(response, "application/xhtml+xml", page);
+};
+
+async function handleMain(request, response) {
+  console.log("Handling main page request, url=" + request.url);
+  let file = root + "/index.html";
+  let template = await fs.readFile(root + "/index.html","utf8");
+  if (isEmpty(template)) return fail(response, Error, "Content file not found.");
+  let ts = template.split("$");
+
+  let page = ts[0];
+  switch (request.url) {
+    case "/maps":    page += "class='active'" + ts[1] + ts[2] + ts[3] + ts[4]; break;
+    case "/configs": page += ts[1] + "class='active'" + ts[2] + ts[3] + ts[4]; break;
+    case "/models":  page += ts[1] + ts[2] + "class='active'" + ts[3] + ts[4]; break;
+    case "/other":   page += ts[1] + ts[2] + ts[3] + "class='active'" + ts[4]; break;
+    default:         page += "class='active'" + ts[1] + ts[2] + ts[3] + ts[4]; break;
+  };
+
   deliver(response, "application/xhtml+xml", page);
 };
 

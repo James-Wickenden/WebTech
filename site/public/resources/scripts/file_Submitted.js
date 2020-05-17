@@ -107,7 +107,7 @@ async function receiveData(response) {
   }
   else {
     console.log("Upload successful.")
-    window.location = "/map/" + response.responseText;
+    window.location = "/content/" + response.responseText;
   };
 };
 
