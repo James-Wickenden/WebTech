@@ -17,6 +17,7 @@ let types, paths;
 
 let http = require("http");
 let fs = require("fs").promises;
+let fs_async = require("fs");
 var sqlite = require("sqlite");
 var multiparty = require('multiparty');
 var {parse} = require('querystring');
@@ -199,6 +200,24 @@ async function validateTempUpload(files, uploadsDir) {
   return as[0];
 };
 
+async function tryDownload(response, POSTdata) {
+  let contentid = POSTdata.contentid;
+  console.log(contentid);
+
+  let ps = await db.prepare("select * from uploads where upload_id=?;");
+  let content = await ps.get(contentid);
+  if (isEmpty(content)) return fail(response, Error, "No such upload found with that id");
+
+  let uploadsDir  = process.cwd() + "\\uploads\\" + content.name + "\\";
+  let filestream = fs_async.createReadStream(uploadsDir + content.filename);
+
+  response.writeHead(200, {
+        "Content-disposition": "attachment;filename=" + content.filename
+    });
+
+  filestream.pipe(response);
+};
+
 async function deliverPOST(request, response, POSTData) {
   let url = request.url;
 
@@ -221,6 +240,9 @@ async function deliverPOST(request, response, POSTData) {
   else if (url == "/post/content/data") {
     let status = await tryFileUpload_Data(POSTData);
     return deliver(response, "text/plain", String(status));
+  }
+  else if (url == "/post/download") {
+    return tryDownload(response, POSTData);
   };
 
   deliver(response, "text/plain", "POST url not recognised.");
@@ -231,7 +253,6 @@ async function handlePOST(request, response) {
 };
 
 async function handleContent(request, response) {
-  console.log("Handling content request");
   let url = request.url;
   let content_id = parseInt(url.split("/").pop());
 
@@ -247,7 +268,13 @@ async function handleContent(request, response) {
   if (isEmpty(template)) return fail(response, Error, "Content file not found.");
   let ts = template.split("$");
 
-  let page = ts[0] + content.name + ts[1] + user.username + ts[2] + content.no_downloads + ts[3] + content.no_favourites + ts[4];
+  let page = ts[0] + content.name + ts[1] + user.username + ts[2];
+  page += content.no_downloads + ts[3] + content.no_favourites + ts[4];
+  page += content.description + ts[5] + content.upload_date + ts[6];
+  page += content.comments.length + ts[7] + content.comments + ts[8];
+
+  // TODO: add image handling using:
+  // https://stackoverflow.com/questions/5823722/how-to-serve-an-image-using-nodejs
   deliver(response, "application/xhtml+xml", page);
 };
 
