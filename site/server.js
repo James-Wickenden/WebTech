@@ -159,9 +159,9 @@ async function tryFileUpload_Form(POSTData, url) {
       break;
     }
   };
-  
+
   let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, '');");
-  await ps_add.run(undefined, 0, POSTData.name, POSTData.file, POSTData.cate, POSTData.cats, getToday(), POSTData.desc);
+  await ps_add.run(undefined, 1, POSTData.name, POSTData.file, POSTData.cate, POSTData.cats, getToday(), POSTData.desc);
   tmp = POSTData.name;
   return true;
 };
@@ -233,9 +233,22 @@ async function handlePOST(request, response) {
 async function handleContent(request, response) {
   console.log("Handling content request");
   let url = request.url;
-  let content_id = url.split("/").pop();
-  console.log(content_id);
+  let content_id = parseInt(url.split("/").pop());
 
+  let ps_content = await db.prepare("select * from uploads where upload_id=?");
+  let content = await ps_content.get(content_id);
+  if (isEmpty(content)) return fail(response, NotFound, "No such upload with that id");
+
+  let ps_user = await db.prepare("select * from users where user_id=?");
+  let user = await ps_user.get(content.user_id);
+  if (isEmpty(user)) return fail(response, Error, "Database error; uploaded content has no associated user.");
+
+  let template = await fs.readFile("./public/map.html","utf8");
+  if (isEmpty(template)) return fail(response, Error, "Content file not found.");
+  let ts = template.split("$");
+
+  let page = ts[0] + content.name + ts[1] + user.username + ts[2] + content.no_downloads + ts[3] + content.no_favourites + ts[4];
+  deliver(response, "application/xhtml+xml", page);
 };
 
 // written with help from:

@@ -1,6 +1,6 @@
 "use strict";
 
-let sourceFile = "navbar.html";
+let sourceFile = "/navbar.html";
 
 addEventListener('load', loadhtml);
 
