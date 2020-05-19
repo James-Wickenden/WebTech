@@ -294,13 +294,33 @@ async function handleMain(request, response) {
   if (isEmpty(template)) return fail(response, Error, "Content file not found.");
   let ts = template.split("$");
 
-  let page = ts[0];
+  let i = 0;
+  let page = ts[i];
   switch (request.url) {
-    case "/maps":    page += "class='active'" + ts[1] + ts[2] + ts[3] + ts[4]; break;
-    case "/configs": page += ts[1] + "class='active'" + ts[2] + ts[3] + ts[4]; break;
-    case "/models":  page += ts[1] + ts[2] + "class='active'" + ts[3] + ts[4]; break;
-    case "/other":   page += ts[1] + ts[2] + ts[3] + "class='active'" + ts[4]; break;
-    default:         page += "class='active'" + ts[1] + ts[2] + ts[3] + ts[4]; break;
+    default:         {
+      page += "class='active'" + ts[++i] + ts[++i] + ts[++i] + ts[++i];
+      page += "Map desc" + ts[++i];
+      page += await loopMainContent("o_map") + ts[++i];
+      break;
+    }
+    case "/configs": {
+      page += ts[++i] + "class='active'" + ts[++i] + ts[++i] + ts[++i];
+      page += "Config desc" + ts[++i];
+      page += await loopMainContent("o_config") + ts[++i];
+      break;
+    }
+    case "/models":  {
+      page += ts[++i] + ts[++i] + "class='active'" + ts[++i] + ts[++i];
+      page += "Model desc" + ts[++i];
+      page += await loopMainContent("o_model") + ts[++i];
+      break;
+    }
+    case "/other":   {
+      page += ts[++i] + ts[++i] + ts[++i] + "class='active'" + ts[++i];
+      page += "Other desc" + ts[++i];
+      page += await loopMainContent("o_other") + ts[++i];
+      break;
+    }
   };
 
   deliver(response, "application/xhtml+xml", page);
@@ -333,7 +353,6 @@ async function handleUser(request, response) {
 
   deliver(response, "application/xhtml+xml", page);
 };
-
 
 // written with help from:
 // https://itnext.io/how-to-handle-the-post-request-body-in-node-js-without-using-a-framework-cd2038b93190?gi=d6a8f3e99295
@@ -369,13 +388,49 @@ function getRequestData(request, response, callback) {
   };
 };
 
+async function loopMainContent(category) {
+  let ps_subs = await db.prepare("select * from uploads where category=?;");
+  let ps_user = await db.prepare("select * from users where user_id=?;");
+  let content = await ps_subs.all(category);
+
+  if (content.length == 0) return "<em style='color:grey'>Nothing has been uploaded in this category!</em>";
+  // replace this message with an svg graphic
+
+  let loop_html = "";
+
+  let file = "HTML_templates/main_content.html";
+  let template = await fs.readFile(file, "utf8");
+  let ts = template.split("$");
+
+  for (let sm of content) {
+    console.log(sm);
+    let row = "";
+    try {
+      let user = await ps_user.get(sm.user_id);
+      let i = 0;
+      row += ts[0] + "/content/" + sm.upload_id + ts[++i];
+      row += "/resources/img/bsp_png.png" + ts[++i] + "/content/" + sm.upload_id + ts[++i] + sm.name + ts[++i];
+      row += "/user/" + sm.user_id + ts[++i] + user.username + ts[++i];
+      row += sm.no_downloads + ts[++i] + sm.no_favourites + ts[++i] + sm.upload_date + ts[++i];
+      row += sm.description + ts[++i];
+    }
+    catch(err) {
+      console.log(err);
+    };
+
+    loop_html += row;
+  };
+
+  return loop_html;
+};
+
 async function loopUserSubmissions(contents) {
   //if (contents[0] == '') return "<em>This user has not submitted anything yet!</em>";
 
   let loop_html = "";
+
   let file = "HTML_templates/user_submission.html";
-  let template = await fs.readFile(file,"utf8");
-  console.log(template);
+  let template = await fs.readFile(file, "utf8");
   let ts = template.split("$");
 
   let x = "1|2|";

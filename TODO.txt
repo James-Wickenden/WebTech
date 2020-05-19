@@ -7,10 +7,15 @@ TODO:
 !  store user data when navigating the site
    add support for favouriting
 !  store submissions in user data
-   allow users to edit their profile
+   allow users to edit their profile; stop editing of other people's
    search bar
 !  random page generation
    load screenshots when viewing content/ uploading screenshots
    add comment support
-_  html for loops for user page submissions
-   html for loops for main page content
+*  html for loops for user page submissions
+_  html for loops for main page content
+   switch content folder saving to use ids
+   change navbar to logged in user-centric
+!  make a SVG site logo
+   make an SVG for empty main page categories
+   admin abilities
