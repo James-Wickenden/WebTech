@@ -57,7 +57,7 @@ function getParams(form) {
   return res;
 }
 
-function getFormData(form) {
+function getFormData(form, key) {
   let formData = new FormData();
   let file;
 
@@ -82,20 +82,24 @@ function getFormData(form) {
     };
   };
 
+  let uploadName = form["s_name_map"].value + form["s_name_config"].value + form["s_name_model"].value + form["s_name_other"].value;
+  console.log("uploadName=" + uploadName);
+  formData.append("uploadName", uploadName);
+  formData.append("key", key);
   return formData;
 };
 
 async function receiveForm(response) {
   //console.log(response);
-  //console.log(response.responseText);
-  if (response.responseText == "true") {
-    console.log("Upload approved. Sending data...")
-    await sendFormData();
-  }
-  else {
+  console.log(response.responseText);
+  if (response.responseText == "-1") {
     console.log("Upload not approved.");
     updateStatusLabel(false, "The upload was not successful.");
     // TODO: use statuscodes to deliver informative fail messages
+  }
+  else {
+    console.log("Upload approved. Sending data...")
+    await sendFormData(response.responseText);
   };
 };
 
@@ -111,9 +115,9 @@ async function receiveData(response) {
   };
 };
 
-async function sendFormData() {
+async function sendFormData(key) {
   let form = document.getElementById("upload_form");
-
+  console.log(key);
   var xhttp_data = new XMLHttpRequest();
   xhttp_data.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -122,7 +126,7 @@ async function sendFormData() {
   };
   xhttp_data.open("POST", "/post/content/data", true);
   //xhttp_data.setRequestHeader("Content-Type", "multipart/form-data");
-  let formData = getFormData(form);
+  let formData = getFormData(form, key);
   //console.log(formData.get("file"));
   xhttp_data.send(formData);
 }

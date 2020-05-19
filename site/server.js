@@ -27,8 +27,8 @@ var mkdirp = require('mkdirp');
 var rimraf = require("rimraf");
 var ncp = require('ncp').ncp;
 
+var uploadstmp  = process.cwd() + "\\public\\uploadstmp\\";
 var db;
-var tmp = "";
 
 // Start the server:
 start();
@@ -46,9 +46,6 @@ async function start() {
 
   let as = await db.all("select * from uploads");
   console.log(as);
-
-  let uploadsTemp  = process.cwd() + "\\upload_temp\\";
-  mkdirp.sync(uploadsTemp);
 
   await fs.access(root);
   await fs.access(root + "/index.html");
@@ -134,24 +131,24 @@ async function tryLogin(POSTData) {
 };
 
 async function tryFileUpload_Form(POSTData, url) {
-  if (isEmpty(POSTData.cate)) return false;
-  if (isEmpty(POSTData.name)) return false;
-  if (isEmpty(POSTData.file)) return false;
-  if (POSTData.desc.length >= 1024) return false;
-  //if (isEmpty(POSTData.tags)) return false;
+  if (isEmpty(POSTData.cate)) return -1;
+  if (isEmpty(POSTData.name)) return -1;
+  if (isEmpty(POSTData.file)) return -1;
+  if (POSTData.desc.length >= 1024) return -1;
+  //if (isEmpty(POSTData.tags)) return -1;
 
   let ps = await db.prepare("select * from users where user_id=?;");
   let as = await ps.all(POSTData.userid);
-  if (as.length == 0) return false;
+  if (as.length == 0) return -1;
 
   ps = await db.prepare("select * from uploads where name=?;");
   as = await ps.all(POSTData.name);
-  if (as.length != 0) return false;
+  if (as.length != 0) return -1;
 
   switch(POSTData.cat) {
     case "o_map": {
       let screenshots = POSTData.scsh.split("|");
-      if (screenshots.length > 8) return false;
+      if (screenshots.length > 8) return -1;
       break;
     }
     case "o_config": {
@@ -163,7 +160,7 @@ async function tryFileUpload_Form(POSTData, url) {
       break;
     }
     case "o_other": {
-      if (isEmpty(POSTData.cats)) return false;
+      if (isEmpty(POSTData.cats)) return -1;
       break;
     }
     default: {
@@ -171,43 +168,33 @@ async function tryFileUpload_Form(POSTData, url) {
     }
   };
 
-  let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, '');");
-  await ps_add.run(undefined, 1, POSTData.name, POSTData.file, POSTData.cate, POSTData.cats, getToday(), POSTData.desc);
-  tmp = POSTData.name;
-  return true;
+  let key = Math.floor(Math.random() * 65536);
+  console.log("key=" + key);
+  let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, '');");
+  await ps_add.run(undefined, 1, POSTData.name, POSTData.file, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
+  return key;
 };
 
-async function tryFileUpload_Data(files) {
-  if (tmp == "") {
-    console.log("No local directory found; was data uploaded without a reference form beforehand?")
-    return -1;
+async function tryFileUpload_Data(files, content_id) {
+  if (content_id == -1) {
+    console.log("Attempted to upload files to a folder with an invalid key.");
+    rimraf.sync(uploadstmp);
+    return content_id;
   };
 
-  let uploadsDir  = process.cwd() + "\\uploads\\" + tmp + "\\";
+  let uploadsDir  = process.cwd() + "\\public\\uploads\\" + content_id + "\\";
   mkdirp.sync(uploadsDir);
 
-  let validUpload = await validateTempUpload(files, uploadsDir);
-  if (validUpload == -1) return -1;
-
   Object.keys(files).forEach(async function(name) {
+    console.log(files[name][0].path);
     path = files[name][0].path;
     filename = files[name][0].originalFilename;
     await fs.rename(path, uploadsDir + filename);
   });
+  rimraf.sync(uploadstmp);
 
-  tmp = "";
   console.log('Upload completed!');
-  return validUpload.upload_id;
-};
-
-async function validateTempUpload(files, uploadsDir) {
-  let ps = await db.prepare("select * from uploads where name=?;");
-  let as = await ps.all(tmp);
-
-  if (as.length != 1) return -1;
-  //if (await fs.readdir(uploadsDir).length > 0) return -1;
-
-  return as[0];
+  return content_id;
 };
 
 async function handleDownload(request, response) {
@@ -218,7 +205,7 @@ async function handleDownload(request, response) {
   let content = await ps.get(content_id);
   if (isEmpty(content)) return fail(response, Error, "No such upload found with that id");
 
-  let filepath  = process.cwd() + "\\uploads\\" + content.name + "\\"  + content.filename;
+  let filepath  = process.cwd() + "\\public\\uploads\\" + content.upload_id + "\\"  + content.filename;
   if (!fs_sync.existsSync(filepath)) {
     console.log("Error: the associated file for id=" + content_id + " was not found.");
     return;
@@ -245,12 +232,12 @@ async function deliverPOST(request, response, POSTData, url) {
     return deliver(response, "text/plain", String(status));
   }
   else if (url == "/post/content/form") {
-    let status = await tryFileUpload_Form(POSTData, url);
-    if (!status) console.log("Invalid attempt to submit upload denied.");
-    return deliver(response, "text/plain", String(status));
+    let key_res = await tryFileUpload_Form(POSTData, url);
+    if (key_res == -1) console.log("Invalid attempt to submit upload denied.");
+    return deliver(response, "text/plain", String(key_res));
   }
-  else if (url == "/post/content/data") {
-    let status = await tryFileUpload_Data(POSTData);
+  else if (request.url == "/post/content/data") {
+    let status = await tryFileUpload_Data(POSTData, url);
     return deliver(response, "text/plain", String(status));
   };
 
@@ -353,10 +340,18 @@ async function handleUser(request, response, url) {
   deliver(response, "application/xhtml+xml", page);
 };
 
+async function validateUploadKey(fields) {
+  let ps = await db.prepare("select * from uploads where name=? and key=?");
+  let as = await ps.all(fields.uploadName[0], fields.key[0]);
+  if (as.length != 1) return -1;
+
+  return as[0].upload_id;
+};
+
 // written with help from:
 // https://itnext.io/how-to-handle-the-post-request-body-in-node-js-without-using-a-framework-cd2038b93190?gi=d6a8f3e99295
 // multipart parsing was done using the multiparty npm package.
-function getRequestData(request, response, callback) {
+function getRequestData(request, response, callback, url) {
   const FORM_URLENCODED = 'application/x-www-form-urlencoded';
   const FORM_MULTIPARTY = "multipart/form-data"
 
@@ -367,19 +362,20 @@ function getRequestData(request, response, callback) {
       body += chunk.toString();
     });
     request.on('end', () => {
-      callback(request, response, parse(body));
+      callback(request, response, parse(body), url);
     });
   }
   else if (request.headers['content-type'].includes(FORM_MULTIPARTY)) {
     // this section handles multipart/form-data post requests.
     let form = new multiparty.Form();
 
-    let uploadsDir  = process.cwd() + "\\uploads\\" + tmp + "\\";
-    mkdirp.sync(uploadsDir);
-    form.uploadDir = uploadsDir;
+    //mkdirp.sync(uploadsDir);
+    mkdirp.sync(uploadstmp);
+    form.uploadDir = uploadstmp;
 
     form.parse(request, async function(err, fields, files) {
-      callback(request, response, files);
+      let valid_id = await validateUploadKey(fields);
+      callback(request, response, files, valid_id);
     });
   }
   else {
