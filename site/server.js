@@ -64,16 +64,19 @@ async function start() {
 // Serve a request by delivering a file.
 async function handle(request, response) {
     let url = request.url;
-    //if (url.endsWith("/")) url = url + "index.html";
     console.log(url);
 
     if (url == "/" || url == "/maps" || url == "/configs" || url == "/models" || url == "/other"){
       return handleMain(request, response);
     };
+
+    if (url == "/random") url = await getRandomUrl();
+
+    if (url.includes("/post/"))     return handlePOST(request, response, url);
     if (url.includes("/download/")) return handleDownload(request, response);
-    if (url.includes("/post/"))     return handlePOST(request, response);
-    if (url.includes("/content/"))  return handleContent(request, response);
-    if (url.includes("/user/") || url == "/home") return handleUser(request, response);
+
+    if (url.includes("/content/"))  return handleContent(request, response, url);
+    if (url.includes("/user/") || url == "/home") return handleUser(request, response, url);
 
     if (url == "/upload") url = "/upload.html";
     if (url == "/login") url = "/login.html";
@@ -208,20 +211,20 @@ async function validateTempUpload(files, uploadsDir) {
 };
 
 async function handleDownload(request, response) {
-  let contentid = parseInt(request.url.split("/").pop());
-  console.log("Attempting to download content with id=" + contentid);
+  let content_id = parseInt(request.url.split("/").pop());
+  console.log("Attempting to download content with id=" + content_id);
 
   let ps = await db.prepare("select * from uploads where upload_id=?;");
-  let content = await ps.get(contentid);
+  let content = await ps.get(content_id);
   if (isEmpty(content)) return fail(response, Error, "No such upload found with that id");
 
   let filepath  = process.cwd() + "\\uploads\\" + content.name + "\\"  + content.filename;
   if (!fs_sync.existsSync(filepath)) {
-    console.log("Error: the associated file for id=" + contentid + " was not found.");
+    console.log("Error: the associated file for id=" + content_id + " was not found.");
     return;
   }
 
-  await db.run("update uploads set no_downloads = no_downloads + 1 where upload_id = " + contentid);
+  await db.run("update uploads set no_downloads = no_downloads + 1 where upload_id = " + content_id);
 
   let filestream = fs_sync.createReadStream(filepath);
   response.writeHead(200, { "Content-disposition": "attachment;filename=" + content.filename });
@@ -229,9 +232,7 @@ async function handleDownload(request, response) {
   filestream.pipe(response);
 };
 
-async function deliverPOST(request, response, POSTData) {
-  let url = request.url;
-
+async function deliverPOST(request, response, POSTData, url) {
   if (url == "/post") {
     return fail(response, Error, "Invalid request");
   }
@@ -256,12 +257,11 @@ async function deliverPOST(request, response, POSTData) {
   deliver(response, "text/plain", "POST url not recognised.");
 };
 
-async function handlePOST(request, response) {
-  await getRequestData(request, response, deliverPOST);
+async function handlePOST(request, response, url) {
+  await getRequestData(request, response, deliverPOST, url);
 };
 
-async function handleContent(request, response) {
-  let url = request.url;
+async function handleContent(request, response, url) {
   let content_id = parseInt(url.split("/").pop());
 
   let ps_content = await db.prepare("select * from uploads where upload_id=?");
@@ -326,8 +326,7 @@ async function handleMain(request, response) {
   deliver(response, "application/xhtml+xml", page);
 };
 
-async function handleUser(request, response) {
-  let url = request.url;
+async function handleUser(request, response, url) {
   if (url == "/home") url = "/user/1";
   let user_id = parseInt(url.split("/").pop());
 
@@ -469,6 +468,17 @@ async function loopUserSubmissions(contents) {
 
   return loop_html;
 }
+
+async function getRandomUrl() {
+  console.log("Generating a random page id...");
+  let ps = await db.prepare("select * from uploads;");
+  let as = await ps.all();
+  if (as.length == 0) return "//";
+
+  let content_id = Math.floor(Math.random() * as.length) + 1;
+
+  return "/content/" + content_id;
+};
 
 async function getUserStats(contents) {
   //if (contents[0] == '') return {favourites:0, submissions:0, downloads:0};
