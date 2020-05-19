@@ -44,7 +44,7 @@ async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
-  let as = await db.all("select * from users");
+  let as = await db.all("select * from uploads");
   console.log(as);
 
   let uploadsTemp  = process.cwd() + "\\upload_temp\\";
@@ -221,10 +221,10 @@ async function handleDownload(request, response) {
     return;
   }
 
+  await db.run("update uploads set no_downloads = no_downloads + 1 where upload_id = " + contentid);
+
   let filestream = fs_sync.createReadStream(filepath);
-  response.writeHead(200, {
-        "Content-disposition": "attachment;filename=" + content.filename
-    });
+  response.writeHead(200, { "Content-disposition": "attachment;filename=" + content.filename });
 
   filestream.pipe(response);
 };
@@ -315,22 +315,22 @@ async function handleUser(request, response) {
   let user = await ps_user.get(user_id);
   if (isEmpty(user)) return fail(response, NotFound, "No such user with that id");
 
-  let contents = user.submissions.split("|");
-
   let template = await fs.readFile(root + "/user.html","utf8");
   if (isEmpty(template)) return fail(response, Error, "Content file not found.");
   let ts = template.split("$");
 
+  let contents = user.submissions.split("|");
+
   let user_stats = await getUserStats(contents);
+  let submissions_html = await loopUserSubmissions(contents);
 
   let i = 0;
   let page = ts[i] + user.username + ts[++i];
+  page += submissions_html + ts[++i];
   page += user.join_date + ts[++i] + user_stats.downloads + ts[++i];
   page += user_stats.favourites + ts[++i] + user_stats.submissions + ts[++i];
   page += user.about + ts[++i];
 
-  // TODO: add image handling using:
-  // https://stackoverflow.com/questions/5823722/how-to-serve-an-image-using-nodejs
   deliver(response, "application/xhtml+xml", page);
 };
 
@@ -369,11 +369,56 @@ function getRequestData(request, response, callback) {
   };
 };
 
+async function loopUserSubmissions(contents) {
+  //if (contents[0] == '') return "<em>This user has not submitted anything yet!</em>";
+
+  let loop_html = "";
+  let file = "user_submission.html";
+  let template = await fs.readFile(file,"utf8");
+  console.log(template);
+  let ts = template.split("$");
+
+  let x = "1|2|";
+  let submissions = x.split("|");
+
+  let ps = await db.prepare("select * from uploads where upload_id=?;");
+
+  for (let sm of submissions) {
+    try {
+      console.log(sm);
+      if (sm != '') {
+        let content_id = parseInt(sm);
+        let content = await ps.get(content_id);
+        let i = 0;
+        let row = ts[0];
+
+        switch (content.category) {
+          case "o_map":    row += "bsp_svg.svg" + ts[++i]; break;
+          case "o_config": row += "cfg_svg.svg" + ts[++i]; break;
+          case "o_model":  row += "mod_svg.svg" + ts[++i]; break;
+          case "o_other":  row += "oth_svg.svg" + ts[++i]; break;
+          default: row += "blank.svg" + ts[++i]; break;
+        };
+
+        row += "/content/" + content.upload_id + ts[++i] + content.name + ts[++i];
+        row += content.upload_date + ts[++i];
+        row += content.no_downloads + ts[++i] + content.no_favourites + ts[++i];
+        loop_html += row;
+
+      };
+    }
+    catch(err) {
+      console.log(err);
+    };
+  };
+
+  return loop_html;
+}
+
 async function getUserStats(contents) {
   //if (contents[0] == '') return {favourites:0, submissions:0, downloads:0};
   let x = "1|2|";
   let submissions = x.split("|");
-  //let contents = user.submissions.split("|");
 
   let no_dnls = 0, no_favs = 0, no_subs = 0;
   let ps = await db.prepare("select * from uploads where upload_id=?;");
@@ -394,7 +439,7 @@ async function getUserStats(contents) {
     };
   };
 
-  console.log("no_dnls= " + no_dnls + ", no_favs= " + no_favs + ", no_subs= " + no_subs);
+  //console.log("no_dnls= " + no_dnls + ", no_favs= " + no_favs + ", no_subs= " + no_subs);
   return { downloads: no_dnls, favourites: no_favs, submissions: no_subs };
 };
 

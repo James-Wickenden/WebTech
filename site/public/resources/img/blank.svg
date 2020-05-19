@@ -16,7 +16,7 @@
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-   sodipodi:docname="oth_svg.svg">
+   sodipodi:docname="blank.svg">
   <defs
      id="defs2">
     <linearGradient
@@ -69,7 +69,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -90,18 +90,6 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-244.08332)">
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.20623302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.2551558"
-       x="2.5685143"
-       y="266.8287"
-       id="text3717"
-       transform="scale(0.96436847,1.036948)"><tspan
-         sodipodi:role="line"
-         id="tspan3715"
-         x="2.5685143"
-         y="266.8287"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:19.05163574px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;stroke-width:0.2551558">other</tspan></text>
     <flowRoot
        xml:space="preserve"
        id="flowRoot3719"

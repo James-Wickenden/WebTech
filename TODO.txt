@@ -2,7 +2,7 @@ TODO:
 [* = done, ! = high priority, _ = in progress]
 
 *  dynamically load user stats on their page
-_  increment download counter on file download
+*  increment download counter on file download
    comment javascript methods
 !  store user data when navigating the site
    add support for favouriting
