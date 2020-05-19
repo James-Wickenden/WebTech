@@ -12,7 +12,7 @@ Graphics:
    make an SVG for empty main page categories
 
 Sever:
-!  store user data when navigating the site
+!_ store user data when navigating the site
 *  html for loops for user page submissions
 *  html for loops for main page content
    change navbar to logged in user-centric
@@ -27,4 +27,5 @@ Other:
    comment javascript methods
    search bar
 *  random page generation
-   switch content folder saving to use ids
+*  switch content folder saving to use ids
+*  remove tmp variable in uploading

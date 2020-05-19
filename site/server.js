@@ -169,7 +169,20 @@ async function tryFileUpload_Form(POSTData, url) {
   };
 
   let key = Math.floor(Math.random() * 65536);
-  console.log("key=" + key);
+
+  // ensures the key is not already in use by another upload
+  let unused_key = false;
+  let ps_keycheck = await db.prepare("select * from uploads where key=?;");
+  while (!unused_key) {
+    let as = await ps_keycheck.all(key);
+    if (as.length == 0) {
+      unused_key = true;
+    }
+    else {
+      key = Math.floor(Math.random() * 65536);
+    };
+  };
+
   let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, '');");
   await ps_add.run(undefined, 1, POSTData.name, POSTData.file, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
   return key;
@@ -186,7 +199,6 @@ async function tryFileUpload_Data(files, content_id) {
   mkdirp.sync(uploadsDir);
 
   Object.keys(files).forEach(async function(name) {
-    console.log(files[name][0].path);
     path = files[name][0].path;
     filename = files[name][0].originalFilename;
     await fs.rename(path, uploadsDir + filename);
@@ -369,7 +381,6 @@ function getRequestData(request, response, callback, url) {
     // this section handles multipart/form-data post requests.
     let form = new multiparty.Form();
 
-    //mkdirp.sync(uploadsDir);
     mkdirp.sync(uploadstmp);
     form.uploadDir = uploadstmp;
 
