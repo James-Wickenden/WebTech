@@ -44,7 +44,7 @@ async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
-  let as = await db.all("select * from uploads");
+  let as = await db.all("select * from users");
   console.log(as);
 
   let uploadsTemp  = process.cwd() + "\\upload_temp\\";
@@ -67,13 +67,13 @@ async function handle(request, response) {
     //if (url.endsWith("/")) url = url + "index.html";
     console.log(url);
 
-    if (url == "/home") url = "/user.html";
     if (url == "/" || url == "/maps" || url == "/configs" || url == "/models" || url == "/other"){
       return handleMain(request, response);
     };
     if (url.includes("/download/")) return handleDownload(request, response);
-    if (url.includes("/post/")) return handlePOST(request, response);
-    if (url.includes("/content/")) return handleContent(request, response);
+    if (url.includes("/post/"))     return handlePOST(request, response);
+    if (url.includes("/content/"))  return handleContent(request, response);
+    if (url.includes("/user/") || url == "/home") return handleUser(request, response);
 
     if (url == "/upload") url = "/upload.html";
     if (url == "/login") url = "/login.html";
@@ -304,6 +304,33 @@ async function handleMain(request, response) {
 
   deliver(response, "application/xhtml+xml", page);
 };
+
+async function handleUser(request, response) {
+  let url = request.url;
+  if (url == "/home") url = "/user/1";
+  let user_id = parseInt(url.split("/").pop());
+
+  let ps_user = await db.prepare("select * from users where user_id=?");
+  let user = await ps_user.get(user_id);
+  if (isEmpty(user)) return fail(response, NotFound, "No such user with that id");
+
+  let template = await fs.readFile(root + "/user.html","utf8");
+  if (isEmpty(template)) return fail(response, Error, "Content file not found.");
+  let ts = template.split("$");
+
+  let no_downloads   = 0;
+  let no_favourites  = 0;
+  let no_submissions = 0;
+
+  let page = ts[0] + user.username + ts[1];
+  page += user.join_date + ts[2] + no_downloads + ts[3] + no_favourites + ts[4] + no_submissions + ts[5];
+  page += user.about + ts[6];
+
+  // TODO: add image handling using:
+  // https://stackoverflow.com/questions/5823722/how-to-serve-an-image-using-nodejs
+  deliver(response, "application/xhtml+xml", page);
+};
+
 
 // written with help from:
 // https://itnext.io/how-to-handle-the-post-request-body-in-node-js-without-using-a-framework-cd2038b93190?gi=d6a8f3e99295
