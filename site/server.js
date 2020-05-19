@@ -276,10 +276,11 @@ async function handleContent(request, response) {
   if (isEmpty(template)) return fail(response, Error, "Content file not found.");
   let ts = template.split("$");
 
-  let page = ts[0] + content.name + ts[1] + user.username + ts[2];
-  page += content.no_downloads + ts[3] + content.no_favourites + ts[4] + content.upload_id + ts[5];
-  page += content.description + ts[6] + content.upload_date + ts[7];
-  page += content.comments.length + ts[8] + content.comments + ts[9];
+  let i = 0;
+  let page = ts[i] + content.name + ts[++i] + user.username + ts[++i];
+  page += content.no_downloads + ts[++i] + content.no_favourites + ts[++i] + content.upload_id + ts[++i];
+  page += content.description + ts[++i] + content.upload_date + ts[++i];
+  page += content.comments.length + ts[++i] + content.comments + ts[++i];
 
   // TODO: add image handling using:
   // https://stackoverflow.com/questions/5823722/how-to-serve-an-image-using-nodejs
@@ -314,17 +315,19 @@ async function handleUser(request, response) {
   let user = await ps_user.get(user_id);
   if (isEmpty(user)) return fail(response, NotFound, "No such user with that id");
 
+  let contents = user.submissions.split("|");
+
   let template = await fs.readFile(root + "/user.html","utf8");
   if (isEmpty(template)) return fail(response, Error, "Content file not found.");
   let ts = template.split("$");
 
-  let no_downloads   = 0;
-  let no_favourites  = 0;
-  let no_submissions = 0;
+  let user_stats = await getUserStats(contents);
 
-  let page = ts[0] + user.username + ts[1];
-  page += user.join_date + ts[2] + no_downloads + ts[3] + no_favourites + ts[4] + no_submissions + ts[5];
-  page += user.about + ts[6];
+  let i = 0;
+  let page = ts[i] + user.username + ts[++i];
+  page += user.join_date + ts[++i] + user_stats.downloads + ts[++i];
+  page += user_stats.favourites + ts[++i] + user_stats.submissions + ts[++i];
+  page += user.about + ts[++i];
 
   // TODO: add image handling using:
   // https://stackoverflow.com/questions/5823722/how-to-serve-an-image-using-nodejs
@@ -364,6 +367,35 @@ function getRequestData(request, response, callback) {
   else {
     callback(null);
   };
+};
+
+async function getUserStats(contents) {
+  //if (contents[0] == '') return {favourites:0, submissions:0, downloads:0};
+  let x = "1|2|";
+  let submissions = x.split("|");
+  //let contents = user.submissions.split("|");
+
+  let no_dnls = 0, no_favs = 0, no_subs = 0;
+  let ps = await db.prepare("select * from uploads where upload_id=?;");
+
+  for (let sm of submissions) {
+    try {
+      console.log(sm);
+      if (sm != '') {
+        let content_id = parseInt(sm);
+        let content = await ps.get(content_id);
+        no_dnls += content.no_downloads;
+        no_favs += content.no_favourites;
+        no_subs += 1;
+      };
+    }
+    catch(err) {
+      console.log(err);
+    };
+  };
+
+  console.log("no_dnls= " + no_dnls + ", no_favs= " + no_favs + ", no_subs= " + no_subs);
+  return { downloads: no_dnls, favourites: no_favs, submissions: no_subs };
 };
 
 // Check if a path is in or can be added to the set of site paths, in order
