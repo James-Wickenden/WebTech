@@ -373,7 +373,7 @@ async function loopUserSubmissions(contents) {
   //if (contents[0] == '') return "<em>This user has not submitted anything yet!</em>";
 
   let loop_html = "";
-  let file = "user_submission.html";
+  let file = "HTML_templates/user_submission.html";
   let template = await fs.readFile(file,"utf8");
   console.log(template);
   let ts = template.split("$");
