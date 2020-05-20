@@ -12,11 +12,12 @@ Graphics:
    make an SVG for empty main page categories
 
 Sever:
-!_ store user data when navigating the site
+*  store user data when navigating the site
 *  html for loops for user page submissions
 *  html for loops for main page content
-   change navbar to logged in user-centric
+_  change navbar to logged in user-centric
    admin abilities
+_  return the user id when an account is created, and set the session data to use it
 
 Database:
 *  increment download counter on file download

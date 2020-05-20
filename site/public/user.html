@@ -12,7 +12,7 @@
   <link rel="stylesheet" type="text/css" href="/resources/css/user_content.css"/>
 
   <script src="/resources/scripts/insert_navbar.js" defer="defer"></script>
-
+  <script src="/resources/scripts/handle_home.js" defer="defer"></script>
 </head>
 
 <body>
@@ -20,36 +20,7 @@
 
   <div id="wrapper" style="padding-left:5%; padding-right:5%; height:100%;">
     <div class="content">
-      <h1>$</h1>
-
-      <div class="container">
-        <div class="submissions">
-          <h1>SUBMISSIONS</h1>
-          <p style="text-align:right">{+ ordering /filtering options}&#160;</p>
-
-            <table><tbody>
-              $
-            </tbody></table>
-
-        </div>
-        <div class="user_details">
-          <!-- <h1>PROFILE</h1> -->
-          <strong>User since:</strong>
-          <p>$</p>
-          <strong>Downloads received:</strong>
-          <p><i class="fa fa-download" style="color:blue"></i> $</p>
-          <strong>Favourites received:</strong>
-          <p><i class="fa fa-heart" style="color:red"></i> $</p>
-          <strong>Number of submissions:</strong>
-          <p><i class="fa fa-upload" style="color:grey"></i> $</p>
-          <strong>About:</strong>
-          <a href="#">Edit Section</a>
-          <p>$</p>
-        </div>
-      </div>
-
-      <br/><br/>
-      <p style="text-align: center"><a href="#"><i class="fa fa-arrow-up"></i></a></p>
+      <div id="userpage"></div>
     </div>
   </div>
 

@@ -44,7 +44,7 @@ async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
-  let as = await db.all("select * from uploads");
+  let as = await db.all("select * from users");
   console.log(as);
 
   await fs.access(root);
@@ -73,7 +73,7 @@ async function handle(request, response) {
     if (url.includes("/download/")) return handleDownload(request, response);
 
     if (url.includes("/content/"))  return handleContent(request, response, url);
-    if (url.includes("/user/") || url == "/home") return handleUser(request, response, url);
+    if (url.includes("/user/") || url == "/home") url = "/user.html";
 
     if (url == "/upload") url = "/upload.html";
     if (url == "/login") url = "/login.html";
@@ -119,15 +119,15 @@ async function tryAddNewAccount(POSTData) {
 }
 
 async function tryLogin(POSTData) {
-  if (isEmpty(POSTData.name)) return false;
-  if (isEmpty(POSTData.pass)) return false;
+  if (isEmpty(POSTData.name)) return -1;
+  if (isEmpty(POSTData.pass)) return -1;
 
   let ps = await db.prepare("select * from users where username=?;");
   let as = await ps.all(POSTData.name);
-  if (as.length == 0) return false;
-  if (as[0].password != POSTData.pass) return false;
+  if (as.length == 0) return -1;
+  if (as[0].password != POSTData.pass) return -1;
 
-  return true;
+  return as[0].user_id;
 };
 
 async function tryFileUpload_Form(POSTData, url) {
@@ -243,6 +243,9 @@ async function deliverPOST(request, response, POSTData, url) {
     let status = await tryLogin(POSTData)
     return deliver(response, "text/plain", String(status));
   }
+  else if (url == "/post/userpage") {
+    return handleUser(request, response, "/user/" + POSTData.userid);
+  }
   else if (url == "/post/content/form") {
     let key_res = await tryFileUpload_Form(POSTData, url);
     if (key_res == -1) console.log("Invalid attempt to submit upload denied.");
@@ -326,15 +329,17 @@ async function handleMain(request, response) {
 };
 
 async function handleUser(request, response, url) {
-  if (url == "/home") url = "/user/1";
+  console.log("url=" + url);
   let user_id = parseInt(url.split("/").pop());
+  if (user_id == -1) return deliver(response, "application/xhtml+xml", "You must log in before you can access your homepage");
 
   let ps_user = await db.prepare("select * from users where user_id=?");
   let user = await ps_user.get(user_id);
-  if (isEmpty(user)) return fail(response, NotFound, "No such user with that id");
+  //console.log(user);
+  if (isEmpty(user)) return deliver(response, "application/xhtml+xml", "No such user with that id");
 
-  let template = await fs.readFile(root + "/user.html","utf8");
-  if (isEmpty(template)) return fail(response, Error, "Content file not found.");
+  let template = await fs.readFile("./HTML_templates/user_page.html","utf8");
+  if (isEmpty(template)) return deliver(response, "application/xhtml+xml", "Content file not found.");
   let ts = template.split("$");
 
   let contents = user.submissions.split("|");
@@ -497,7 +502,6 @@ async function getUserStats(contents) {
 
   for (let sm of submissions) {
     try {
-      console.log(sm);
       if (sm != '') {
         let content_id = parseInt(sm);
         let content = await ps.get(content_id);

@@ -27,6 +27,7 @@ async function login(event) {
 
 function unsuccessful(l_status) {
   l_status.setAttribute("style", "color: red;");
+  sessionStorage.setItem("user_id", null);
   l_status.innerHTML = "Username or password was incorrect.";
 };
 
@@ -57,9 +58,9 @@ function getParams(username, password) {
 }
 
 async function receive(response) {
-  //console.log(response);
   //console.log(response.responseText);
   let l_status = document.getElementById('l_status');
-  if (response.responseText == "false") return unsuccessful(l_status);
+  if (response.responseText == "-1") return unsuccessful(l_status);
+  sessionStorage.setItem("user_id", parseInt(response.responseText));
   window.location = "/home";
 };

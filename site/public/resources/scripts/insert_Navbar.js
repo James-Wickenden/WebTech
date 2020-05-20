@@ -12,5 +12,6 @@ function loadhtml() {
       if (this.status != 200) return;
       document.getElementById('navbar-div').innerHTML = "<div class='navbar'>" + this.responseText + "</div>";
   };
+  //console.log(sessionStorage.getItem("user_id"));
   req.send();
 }
