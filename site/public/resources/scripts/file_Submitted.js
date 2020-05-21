@@ -4,11 +4,11 @@ addEventListener('load', initHandler);
 
 function initHandler() {
   let form = document.getElementById("upload_form");
-  function handleForm(event) { login(event); };
+  function handleForm(event) { submitForm(event); };
   form.addEventListener('submit', handleForm);
 };
 
-async function login(event) {
+async function submitForm(event) {
   event.preventDefault();
 
   let form = document.getElementById('upload_form');
@@ -49,8 +49,8 @@ async function requestFileSubmission(form) {
 };
 
 function getParams(form) {
-  let res = "userid=";
-  res += String(1);
+  let res = "user_id=";
+  res += sessionStorage.getItem("user_id");
   res += "&cate=";
   res += form["s_cats"].value;
   res += getSpecificParams(form);
@@ -117,7 +117,7 @@ async function receiveData(response) {
 
 async function sendFormData(key) {
   let form = document.getElementById("upload_form");
-  console.log(key);
+  //console.log(key);
   var xhttp_data = new XMLHttpRequest();
   xhttp_data.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -129,7 +129,7 @@ async function sendFormData(key) {
   let formData = getFormData(form, key);
   //console.log(formData.get("file"));
   xhttp_data.send(formData);
-}
+};
 
 function getSpecificParams(form) {
   let res = "";
@@ -185,7 +185,7 @@ function parseMultipleFileNames(scsh) {
 };
 
 function allFieldsFilled(form) {
-
+  if (!(sessionStorage.getItem("user_id") > 0)) return false;
   switch(form["s_cats"].value) {
     case "o_map": {
       if (form["s_name_map"].value == '') return false;

@@ -3,8 +3,8 @@ TODO:
 
 User:
 *  dynamically load user stats on their page
-!  store submissions in user data
-!  link submission user_id to the logged in user
+!_ store submissions in user data
+*  link submission user_id to the logged in user
    allow users to edit their profile; stop editing of other people's
 
 Graphics:
@@ -18,7 +18,7 @@ Sever:
 *  html for loops for main page content
 *  change navbar to logged in user-centric
    admin abilities
-_  return the user id when an account is created, and set the session data to use it
+*  return the user id when an account is created, and set the session data to use it
 
 Database:
 *  increment download counter on file download

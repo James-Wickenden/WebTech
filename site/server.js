@@ -132,6 +132,7 @@ async function tryLogin(POSTData) {
 };
 
 async function tryFileUpload_Form(POSTData, url) {
+  console.log(POSTData);
   if (isEmpty(POSTData.cate)) return -1;
   if (isEmpty(POSTData.name)) return -1;
   if (isEmpty(POSTData.file)) return -1;
@@ -139,7 +140,7 @@ async function tryFileUpload_Form(POSTData, url) {
   //if (isEmpty(POSTData.tags)) return -1;
 
   let ps = await db.prepare("select * from users where user_id=?;");
-  let as = await ps.all(POSTData.userid);
+  let as = await ps.all(POSTData.user_id);
   if (as.length == 0) return -1;
 
   ps = await db.prepare("select * from uploads where name=?;");
@@ -184,9 +185,9 @@ async function tryFileUpload_Form(POSTData, url) {
       key = Math.floor(Math.random() * 65536);
     };
   };
-
+  console.log(POSTData);
   let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, '');");
-  await ps_add.run(undefined, 1, POSTData.name, POSTData.file, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
+  await ps_add.run(undefined, POSTData.user_id, POSTData.name, POSTData.file, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
   return key;
 };
 
