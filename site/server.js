@@ -113,7 +113,7 @@ async function tryAddNewAccount(POSTData) {
     await ps_add.run(undefined, POSTData.name, POSTData.pass, getToday());
 
     let as = await ps.all(POSTData.name);
-    if (as.length == 1) return 1;
+    if (as.length == 1) return "1; id=" + as[0].user_id;
   } catch (e) { console.log(e); }
 
   return 0;
@@ -157,7 +157,8 @@ async function tryFileUpload_Form(POSTData, url) {
       break;
     }
     case "o_model": {
-
+      let screenshots = POSTData.scsh.split("|");
+      if (screenshots.length > 8) return -1;
       break;
     }
     case "o_other": {
@@ -208,28 +209,6 @@ async function tryFileUpload_Data(files, content_id) {
 
   console.log('Upload completed!');
   return content_id;
-};
-
-async function handleDownload(request, response) {
-  let content_id = parseInt(request.url.split("/").pop());
-  console.log("Attempting to download content with id=" + content_id);
-
-  let ps = await db.prepare("select * from uploads where upload_id=?;");
-  let content = await ps.get(content_id);
-  if (isEmpty(content)) return fail(response, Error, "No such upload found with that id");
-
-  let filepath  = process.cwd() + "\\public\\uploads\\" + content.upload_id + "\\"  + content.filename;
-  if (!fs_sync.existsSync(filepath)) {
-    console.log("Error: the associated file for id=" + content_id + " was not found.");
-    return;
-  }
-
-  await db.run("update uploads set no_downloads = no_downloads + 1 where upload_id = " + content_id);
-
-  let filestream = fs_sync.createReadStream(filepath);
-  response.writeHead(200, { "Content-disposition": "attachment;filename=" + content.filename });
-
-  filestream.pipe(response);
 };
 
 async function deliverPOST(request, response, POSTData, url) {
@@ -374,6 +353,28 @@ async function handleNavbar(request, response, user_id) {
   };
 
   deliver(response, "application/xhtml+xml", template);
+};
+
+async function handleDownload(request, response) {
+  let content_id = parseInt(request.url.split("/").pop());
+  console.log("Attempting to download content with id=" + content_id);
+
+  let ps = await db.prepare("select * from uploads where upload_id=?;");
+  let content = await ps.get(content_id);
+  if (isEmpty(content)) return fail(response, Error, "No such upload found with that id");
+
+  let filepath  = process.cwd() + "\\public\\uploads\\" + content.upload_id + "\\"  + content.filename;
+  if (!fs_sync.existsSync(filepath)) {
+    console.log("Error: the associated file for id=" + content_id + " was not found.");
+    return;
+  }
+
+  await db.run("update uploads set no_downloads = no_downloads + 1 where upload_id = " + content_id);
+
+  let filestream = fs_sync.createReadStream(filepath);
+  response.writeHead(200, { "Content-disposition": "attachment;filename=" + content.filename });
+
+  filestream.pipe(response);
 };
 
 async function validateUploadKey(fields) {
