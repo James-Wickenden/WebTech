@@ -17,5 +17,4 @@ copy default_DB_data\screenshot2.png public\uploads\1\screenshot2.png
 copy default_DB_data\screenshot3.png public\uploads\1\screenshot3.png
 copy default_DB_data\other.cfg public\uploads\2\other.cfg
 
-echo Ensure /public/uploads folder exists and contains necessary files;
-echo     known to fail due to permission errors.
+echo Ensure /public/uploads folder exists and contains necessary files.

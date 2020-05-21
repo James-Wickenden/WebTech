@@ -110,8 +110,9 @@ async function receiveData(response) {
     // TODO: use statuscodes to deliver informative fail messages
   }
   else {
-    console.log("Upload successful.")
-    window.location = "/content/" + response.responseText;
+    console.log("Upload successful.");
+    updateStatusLabel(true, "Upload successful!.");
+    //window.location = "/content/" + response.responseText;
   };
 };
 

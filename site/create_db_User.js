@@ -14,18 +14,18 @@ async function create() {
 
     as = await db.all("select * from users where user_id=1;");
     if (as.length==0) {
-      await db.run("insert into users values (1, 'admin', 'password', true, '2020.4.20', 'Dev admin', '');");
-    }
+      await db.run("insert into users values (1, 'admin', 'password', true, '2020.4.20', 'Dev admin', '1|2|');");
+    };
 
     as = await db.all("select * from users where user_id=2;");
     if (as.length==0) {
       await db.run("insert into users values (2, 'user1', 'password', false, '2020.4.21', 'Test user', '');");
-    }
+    };
 
     as = await db.all("select * from users;");
     //console.log(as);
   } catch (e) { console.log(e); }
-}
+};
 
 /*
 user ID

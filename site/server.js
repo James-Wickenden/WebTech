@@ -185,9 +185,13 @@ async function tryFileUpload_Form(POSTData, url) {
       key = Math.floor(Math.random() * 65536);
     };
   };
-  console.log(POSTData);
+
   let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, '');");
   await ps_add.run(undefined, POSTData.user_id, POSTData.name, POSTData.file, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
+
+  let ps_newsub = await db.prepare("update users set submissions = submissions || (select upload_id from uploads where name = ?) where user_id =?;")
+  ps_newsub.run(POSTData.name, POSTData.user_id);
+
   return key;
 };
 
@@ -457,7 +461,8 @@ async function loopMainContent(category) {
 };
 
 async function loopUserSubmissions(contents) {
-  //if (contents[0] == '') return "<em>This user has not submitted anything yet!</em>";
+  console.log(contents);
+  if (contents[0] == '') return "<em>This user has not submitted anything yet!</em>";
 
   let loop_html = "";
 
@@ -465,12 +470,9 @@ async function loopUserSubmissions(contents) {
   let template = await fs.readFile(file, "utf8");
   let ts = template.split("$");
 
-  let x = "1|2|";
-  let submissions = x.split("|");
-
   let ps = await db.prepare("select * from uploads where upload_id=?;");
 
-  for (let sm of submissions) {
+  for (let sm of contents) {
     try {
       //console.log(sm);
       if (sm != '') {
