@@ -77,6 +77,7 @@ async function handle(request, response) {
 
     if (url == "/upload") url = "/upload.html";
     if (url == "/login") url = "/login.html";
+    if (url == "/logout") return handleMain(request, response);
     if (url == "/createaccount") url = "/create_account.html";
 
     let ok = await checkPath(url);
@@ -246,6 +247,9 @@ async function deliverPOST(request, response, POSTData, url) {
   else if (url == "/post/userpage") {
     return handleUser(request, response, "/user/" + POSTData.userid);
   }
+  else if (url == "/post/navbar") {
+    return handleNavbar(request, response, POSTData.userid);
+  }
   else if (url == "/post/content/form") {
     let key_res = await tryFileUpload_Form(POSTData, url);
     if (key_res == -1) console.log("Invalid attempt to submit upload denied.");
@@ -290,7 +294,7 @@ async function handleContent(request, response, url) {
 };
 
 async function handleMain(request, response) {
-  console.log("Handling main page request, url=" + request.url);
+  //console.log("Handling main page request, url=" + request.url);
   let file = root + "/index.html";
   let template = await fs.readFile(root + "/index.html","utf8");
   if (isEmpty(template)) return fail(response, Error, "Content file not found.");
@@ -357,6 +361,21 @@ async function handleUser(request, response, url) {
   deliver(response, "application/xhtml+xml", page);
 };
 
+async function handleNavbar(request, response, user_id) {
+  let template = await fs.readFile("./HTML_templates/navbar.html","utf8");
+  console.log("user_id=" + user_id);
+  if (user_id == "-1") {
+    template += "<a href='/login' style='float:right'>Login or Create Account</a>"
+  }
+  else {
+    template += "<a href='/logout' id='logout' style='float:right'>Logout</a>\n"
+    template += "<a href='/home' style='float:right'>My Profile</a>\n"
+    template += "<a href='/upload' style='float:right'>Upload</a>\n"
+  };
+
+  deliver(response, "application/xhtml+xml", template);
+};
+
 async function validateUploadKey(fields) {
   let ps = await db.prepare("select * from uploads where name=? and key=?");
   let as = await ps.all(fields.uploadName[0], fields.key[0]);
@@ -414,7 +433,7 @@ async function loopMainContent(category) {
   let ts = template.split("$");
 
   for (let sm of content) {
-    console.log(sm);
+    //console.log(sm);
     let row = "";
     try {
       let user = await ps_user.get(sm.user_id);
@@ -451,7 +470,7 @@ async function loopUserSubmissions(contents) {
 
   for (let sm of submissions) {
     try {
-      console.log(sm);
+      //console.log(sm);
       if (sm != '') {
         let content_id = parseInt(sm);
         let content = await ps.get(content_id);

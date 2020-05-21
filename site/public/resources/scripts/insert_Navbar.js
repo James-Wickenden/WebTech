@@ -2,16 +2,31 @@
 
 let sourceFile = "/navbar.html";
 
-addEventListener('load', loadhtml);
+addEventListener('load', loadhtml2);
 
-function loadhtml() {
-  var req = new XMLHttpRequest();
-  req.open('GET', sourceFile, true);
-  req.onreadystatechange= function() {
-      if (this.readyState != 4) return;
-      if (this.status != 200) return;
-      document.getElementById('navbar-div').innerHTML = "<div class='navbar'>" + this.responseText + "</div>";
+async function loadhtml2() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      receiveNavbar(this);
+    }
   };
-  //console.log(sessionStorage.getItem("user_id"));
-  req.send();
-}
+  xhttp.open("POST", "/post/navbar", true);
+  xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+  let user_id = sessionStorage.getItem("user_id");
+  if (user_id === null) user_id = -1;
+
+  console.log("userid=" + user_id);
+  xhttp.send("userid=" + user_id);
+};
+
+function receiveNavbar(response) {
+  document.getElementById('navbar-div').innerHTML = "<div class='navbar'>" + response.responseText + "</div>";
+  try {
+    document.getElementById('logout').addEventListener("click", function() { sessionStorage.setItem("user_id", -1)} );
+  }
+  catch(err) {
+    console.log(err);
+  };
+};
