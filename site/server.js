@@ -461,7 +461,6 @@ async function loopMainContent(category) {
 };
 
 async function loopUserSubmissions(contents) {
-  console.log(contents);
   if (contents[0] == '') return "<em>This user has not submitted anything yet!</em>";
 
   let loop_html = "";
@@ -516,14 +515,12 @@ async function getRandomUrl() {
 };
 
 async function getUserStats(contents) {
-  //if (contents[0] == '') return {favourites:0, submissions:0, downloads:0};
-  let x = "1|2|";
-  let submissions = x.split("|");
+  if (contents[0] == '') return {favourites:0, submissions:0, downloads:0};
 
   let no_dnls = 0, no_favs = 0, no_subs = 0;
   let ps = await db.prepare("select * from uploads where upload_id=?;");
 
-  for (let sm of submissions) {
+  for (let sm of contents) {
     try {
       if (sm != '') {
         let content_id = parseInt(sm);

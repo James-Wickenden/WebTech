@@ -112,7 +112,7 @@ async function receiveData(response) {
   else {
     console.log("Upload successful.");
     updateStatusLabel(true, "Upload successful!.");
-    //window.location = "/content/" + response.responseText;
+    window.location = "/content/" + response.responseText;
   };
 };
 
