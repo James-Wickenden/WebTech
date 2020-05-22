@@ -234,8 +234,8 @@ async function deliverPOST(request, response, POSTData, url) {
   else if (url == "/post/navbar") {
     return handleNavbar(request, response, POSTData.userid);
   }
-  else if (url == "/post/u_interaction") {
-    return handleUserInteraction(request, response, POSTData.contentid, POSTData.userid);
+  else if (url == "/post/getfav" || url == "/post/setfav") {
+    return handleFavouriting(request, response, POSTData.contentid, POSTData.userid);
   }
   else if (url == "/post/content/form") {
     let key_res = await tryFileUpload_Form(POSTData, url);
@@ -363,23 +363,52 @@ async function handleNavbar(request, response, user_id) {
   deliver(response, "application/xhtml+xml", template);
 };
 
-async function handleUserInteraction(request, response, contentid, userid) {
-  if (userid == "-1") return deliver(response, "application/xhtml+xml", "00");
+async function handleFavouriting(request, response, contentid, userid) {
+  let url = request.url;
+  if (userid == "-1") return deliver(response, "application/xhtml+xml", "false|get");
 
   try {
-    let user_id = parseInt(userid);
-    let content_id = parseInt(contentid);
+    let ps_get_fav = await db.prepare("select favourites from users where user_id=?;");
 
-    let ps_userstats = await db.prepare("select * from users where user_id=?;");
-    let user = await ps_userstats.get(user_id);
-    console.log(user);
+    let user_favourites = await ps_get_fav.get(parseInt(userid));
+    console.log(url);
 
-    if (user.favourites != "") {
-      let favourites = user.favourites.split("|");
-      if (favourites.includes(contentid)) return deliver(response, "application/xhtml+xml", "true");
+    if (url == "/post/getfav") {
+      if (user_favourites.favourites != "") {
+        let favourites = user_favourites.favourites.split("|");
+        if (favourites.includes(contentid)) return deliver(response, "application/xhtml+xml", "true|get");
+      };
+
+      return deliver(response, "application/xhtml+xml", "false|get");
+    }
+    else {
+      let new_favourites = "";
+      let foundfav = false;
+
+      if (user_favourites.favourites != "") {
+        let favourites = user_favourites.favourites.split("|");
+        for (let fav of favourites) {
+          if (fav != '') {
+            if (fav == contentid) foundfav = true;
+            else new_favourites += (fav + "|");
+          };
+        };
+        if (!foundfav) new_favourites += contentid + "|";
+      }
+      else {
+        new_favourites = contentid + "|";
+      };
+
+      let ps_upd_fav = await db.prepare("update users set favourites=? where user_id=?;");
+      let ps_upd_map = await db.prepare("update uploads set no_favourites=? where upload_id=?;");
+      let ps_map_fav = await db.prepare("select no_favourites from uploads where upload_id=?")
+
+      await ps_upd_fav.run(new_favourites, parseInt(userid));
+      let cur_no_favourites = await ps_map_fav.get(parseInt(contentid));
+      await ps_upd_map.run((foundfav ? (cur_no_favourites.no_favourites - 1) : (cur_no_favourites.no_favourites + 1)), parseInt(contentid));
+
+      return deliver(response, "application/xhtml+xml", (!foundfav).toString() + "|set");
     };
-
-    return deliver(response, "application/xhtml+xml", "false");
   }
   catch(err) {
     console.log(err);
