@@ -4,6 +4,7 @@ addEventListener('load', loadContentUserStats);
 
 async function loadContentUserStats() {
   document.getElementById("heart_link").addEventListener("click", clickFavourite);
+  document.getElementById("down_link").addEventListener("click", clickDownload);
 
   let user_id = sessionStorage.getItem("user_id");
   if (user_id === null) user_id = -1;
@@ -23,7 +24,7 @@ async function loadContentUserStats() {
   xhttp.send("contentid=" + contentid + "&userid=" + user_id);
 };
 
-async function setFav(response) {
+function setFav(response) {
   console.log(response.responseText);
   let is_favourited = (response.responseText.split("|")[0] == "true");
 
@@ -54,4 +55,9 @@ function clickFavourite(event) {
   xhttp.open("POST", "/post/setfav", true);
   xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
   xhttp.send("contentid=" + contentid + "&userid=" + user_id);
+};
+
+function clickDownload(event) {
+  let curval = parseInt(document.getElementById("d_saved").innerHTML);
+  document.getElementById("d_saved").innerHTML = curval + 1;
 };
