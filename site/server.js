@@ -234,6 +234,9 @@ async function deliverPOST(request, response, POSTData, url) {
   else if (url == "/post/navbar") {
     return handleNavbar(request, response, POSTData.userid);
   }
+  else if (url == "/post/u_interaction") {
+    return handleUserInteraction(request, response, POSTData.contentid, POSTData.userid);
+  }
   else if (url == "/post/content/form") {
     let key_res = await tryFileUpload_Form(POSTData, url);
     if (key_res == -1) console.log("Invalid attempt to submit upload denied.");
@@ -267,7 +270,7 @@ async function handleContent(request, response, url) {
   let ts = template.split("$");
 
   let i = 0;
-  let page = ts[i] + content.name + ts[++i] + user.username + ts[++i];
+  let page = ts[i] + content.name + ts[++i] + content.upload_id + ts[++i] + user.username + ts[++i];
   page += content.no_downloads + ts[++i] + content.no_favourites + ts[++i] + content.upload_id + ts[++i];
   page += content.description + ts[++i] + content.upload_date + ts[++i];
   page += content.comments.length + ts[++i] + content.comments + ts[++i];
@@ -358,6 +361,31 @@ async function handleNavbar(request, response, user_id) {
   };
 
   deliver(response, "application/xhtml+xml", template);
+};
+
+async function handleUserInteraction(request, response, contentid, userid) {
+  if (userid == "-1") return deliver(response, "application/xhtml+xml", "00");
+
+  try {
+    let user_id = parseInt(userid);
+    let content_id = parseInt(contentid);
+
+    let ps_userstats = await db.prepare("select * from users where user_id=?;");
+    let user = await ps_userstats.get(user_id);
+    console.log(user);
+
+    if (user.favourites != "") {
+      let favourites = user.favourites.split("|");
+      if (favourites.includes(contentid)) return deliver(response, "application/xhtml+xml", "true");
+    };
+
+    return deliver(response, "application/xhtml+xml", "false");
+  }
+  catch(err) {
+    console.log(err);
+    return deliver(response, "application/xhtml+xml", "false");
+  };
+
 };
 
 async function handleDownload(request, response) {

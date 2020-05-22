@@ -24,6 +24,8 @@ async function loadhtml() {
 function receiveNavbar(response) {
   document.getElementById('navbar-div').innerHTML = "<div class='navbar'>" + response.responseText + "</div>";
   if (document.getElementById('logout') !== null) {
-    document.getElementById('logout').addEventListener("click", function() { sessionStorage.setItem("user_id", -1)} );
+    document.getElementById('logout').addEventListener("click", function(event) {
+      sessionStorage.setItem("user_id", -1); event.preventDefault(); location.reload();
+    });
   };
 };
