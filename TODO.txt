@@ -5,12 +5,12 @@ User:
 *  dynamically load user stats on their page
 *  store submissions in user data
 *  link submission user_id to the logged in user
-_  allow users to edit their profile; stop editing of other people's
+*  allow users to edit their profile; stop editing of other people's
 !  ensure user control:
         generate a key when a user logs in on the sever and store it in sessionStorage and the user Database
         submit the user key with each request and use it to validate the presence of that user.
 
-Graphics:
+_Graphics:
    load screenshots when viewing content/ uploading screenshots
 !  make an SVG site logo
    make an SVG for empty main page categories

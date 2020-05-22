@@ -231,6 +231,9 @@ async function deliverPOST(request, response, POSTData, url) {
   else if (url == "/post/userpage") {
     return handleUser(request, response, "/user/" + POSTData.userid);
   }
+  else if (url == "/post/newdesc") {
+    return handleProfileUpdate(request, response, POSTData);
+  }
   else if (url == "/post/navbar") {
     return handleNavbar(request, response, POSTData.userid);
   }
@@ -414,7 +417,17 @@ async function handleFavouriting(request, response, contentid, userid) {
     console.log(err);
     return deliver(response, "application/xhtml+xml", "false");
   };
+};
 
+async function handleProfileUpdate(request, response, POSTData) {
+  if (POSTData.userid == "-1") return deliver(response, "application/xhtml+xml", "fail");
+  let user_id = parseInt(POSTData.userid);
+  let newdesc = POSTData.newdesc;
+  console.log("new description submitted by user_id=" + user_id + ": " + newdesc);
+
+  let ps_update = await db.prepare("update users set about=? where user_id=?;");
+  ps_update.run(newdesc, user_id);
+  deliver(response, "application/xhtml+xml", "success");
 };
 
 async function handleDownload(request, response) {

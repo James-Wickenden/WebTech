@@ -2,7 +2,7 @@
 
 addEventListener('load', loadHomeSession);
 var user_id;
-var desc_editor;
+var desc_editor, cur_desc;
 async function loadHomeSession() {
 
   user_id = parseInt(window.location.pathname.split("/").pop());
@@ -10,7 +10,7 @@ async function loadHomeSession() {
     user_id = sessionStorage.getItem("user_id");
   };
 
-  var xhttp = new XMLHttpRequest();
+  let xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
       receiveHome(this);
@@ -31,20 +31,46 @@ async function receiveHome(response) {
 function formatDesc() {
   if (user_id === null || user_id == "-1") return;
   if (user_id != sessionStorage.getItem("user_id")) return;
-  desc_editor = document.getElementById("edit_desc");
 
+  desc_editor = document.getElementById("edit_desc");
+  cur_desc = document.getElementById("cur_desc");
+
+  document.getElementById("newdesc").placeholder = cur_desc.innerHTML;
   document.getElementById("toggle_desc").style = "display:inline";
   document.getElementById("toggle_desc").addEventListener('click', toggleDesc);
+  desc_editor.addEventListener('submit', submitNewDesc);
 };
 
 function toggleDesc(event) {
   event.preventDefault();
 
-  if (desc_editor.style.display == "inline") {
-
+  if (desc_editor.style.display == "block") {
+    cur_desc.style = "display:block";
     desc_editor.style = "display:none";
   }
   else {
-    desc_editor.style = "display:inline";
+    cur_desc.style = "display:none";
+    desc_editor.style = "display:block";
+  };
+};
+
+function submitNewDesc(event) {
+  event.preventDefault();
+  let newdesc = document.getElementById("newdesc").value;
+
+  let xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      receiveNewDesc(this);
+    }
+  };
+  xhttp.open("POST", "/post/newdesc", true);
+  xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  xhttp.send("userid=" + user_id + "&newdesc=" + newdesc);
+};
+
+function receiveNewDesc(response) {
+  if (response.responseText == "success") {
+    location.reload();
   };
 };
