@@ -3,14 +3,18 @@ TODO:
 
 User:
 *  dynamically load user stats on their page
-!_ store submissions in user data
+*  store submissions in user data
 *  link submission user_id to the logged in user
    allow users to edit their profile; stop editing of other people's
+!  ensure user control:
+        generate a key when a user logs in on the sever and store it in sessionStorage and the user Database
+        submit the user key with each request and use it to validate the presence of that user.
 
 Graphics:
    load screenshots when viewing content/ uploading screenshots
-!  make a SVG site logo
+!  make an SVG site logo
    make an SVG for empty main page categories
+   make an SVG for failed URLs
 
 Sever:
 *  store user data when navigating the site
@@ -22,7 +26,7 @@ Sever:
 
 Database:
 *  increment download counter on file download
-   add support for favouriting
+_  add support for favouriting
    add comment support
 
 Other:
@@ -31,4 +35,4 @@ Other:
 *  random page generation
 *  switch content folder saving to use ids
 *  remove tmp variable in uploading
-_  prevent non-logged in users from uploading
+*  prevent non-logged in users from uploading

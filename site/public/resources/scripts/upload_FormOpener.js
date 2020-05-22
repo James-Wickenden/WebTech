@@ -1,38 +1,21 @@
 "use strict";
-console.log("starting");
+
+addEventListener('load', initFormOpener);
+
+function initFormOpener() {
+  console.log("Loading FormOpener...");
+
+  let user_id = sessionStorage.getItem("user_id");
+  if (user_id === null) user_id = -1;
+  if (user_id == -1) notLoggedIn();
+}
 
 function formatCategory() {
-
   hideAllForms();
 
-  switch (document.getElementById('s_cats').value) {
-    case "o_map": {
-      console.log("Loading Map upload template")
-      unhideForm('t_map');
-      break;
-    }
-    case "o_config": {
-      console.log("Loading Config upload template")
-      unhideForm('t_config');
-      break;
-    }
-    case "o_model": {
-      console.log("Loading Model upload template")
-      unhideForm('t_model');
-      break;
-    }
-    case "o_other": {
-      console.log("Loading Other upload template")
-      unhideForm('t_other');
-      break;
-    }
-    default: {
-      console.log("Closing Form Templates")
-      hideAllForms();
-      break;
-    }
-  };
-
+  let div_id = "t_" + document.getElementById('s_cats').value.split("_").pop();
+  console.log("Loading upload template: " + div_id);
+  unhideForm(div_id);
 };
 
 function hideAllForms() {
@@ -47,4 +30,9 @@ function hideAllForms() {
 function unhideForm(category) {
   document.getElementById(category).setAttribute("style", "display: block;");
   document.getElementById('but_submit').setAttribute("style", "display: block;");
+};
+
+function notLoggedIn() {
+  //document.getElementById("upload_form").setAttribute("style", "display: none;");
+  document.getElementById("upload_form").innerHTML = "<p style='color:red'>You must be logged in to upload.</p>";
 };

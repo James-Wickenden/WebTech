@@ -2,9 +2,9 @@
 
 let sourceFile = "/navbar.html";
 
-addEventListener('load', loadhtml2);
+addEventListener('load', loadhtml);
 
-async function loadhtml2() {
+async function loadhtml() {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -23,10 +23,7 @@ async function loadhtml2() {
 
 function receiveNavbar(response) {
   document.getElementById('navbar-div').innerHTML = "<div class='navbar'>" + response.responseText + "</div>";
-  try {
+  if (document.getElementById('logout') !== null) {
     document.getElementById('logout').addEventListener("click", function() { sessionStorage.setItem("user_id", -1)} );
-  }
-  catch(err) {
-    console.log(err);
   };
 };
