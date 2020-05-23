@@ -15,9 +15,11 @@ async function loadhtml() {
   xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
   let user_id = sessionStorage.getItem("user_id");
+  let sessionkey = sessionStorage.getItem("sessionkey");
   if (user_id === null) user_id = -1;
 
   console.log("userid=" + user_id);
+  console.log("sessionkey=" + sessionkey);
   xhttp.send("userid=" + user_id);
 };
 
@@ -25,7 +27,10 @@ function receiveNavbar(response) {
   document.getElementById('navbar-div').innerHTML = "<div class='navbar'>" + response.responseText + "</div>";
   if (document.getElementById('logout') !== null) {
     document.getElementById('logout').addEventListener("click", function(event) {
-      sessionStorage.setItem("user_id", -1); event.preventDefault(); location.reload();
+      event.preventDefault();
+      sessionStorage.setItem("user_id", -1);
+      sessionStorage.setItem("sessionkey", -1);
+      location.reload();
     });
   };
 };

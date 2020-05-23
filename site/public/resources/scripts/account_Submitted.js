@@ -52,12 +52,14 @@ async function addNewUser(event) {
 };
 
 function handleStatusLabel(status) {
-  console.log("status=" + status);
   switch (parseInt(status[0])) {
     case statusMode.SUCCESS: {
       updateStatusLabel(true, "Account registered successfully!");
-      let my_id = parseInt(status.split("=")[1]);
+
+      let my_id = parseInt(status.split("&")[1].split("=")[1]);
+      let sessionkey = parseInt(status.split("&")[2].split("=")[1]);
       sessionStorage.setItem("user_id", my_id);
+      sessionStorage.setItem("sessionkey", sessionkey);
       window.location = "/home";
       break;
     }
@@ -121,7 +123,6 @@ function getParams(username, password) {
 }
 
 async function receive(response) {
-  //console.log(response);
-  //console.log(response.responseText);
+  console.log(response.responseText);
   handleStatusLabel(response.responseText);
 };

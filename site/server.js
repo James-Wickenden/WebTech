@@ -108,27 +108,39 @@ async function tryAddNewAccount(POSTData) {
   if (as.length != 0) return 5;
 
   try {
+    let ps_keycheck = await db.prepare("select * from users where sessionkey=?;");
+    let sessionkey = await generateNewKey(ps_keycheck);
 
-    let ps_add = await db.prepare("insert into users values (?, ?, ?, false, ?, '', '');");
-    await ps_add.run(undefined, POSTData.name, POSTData.pass, getToday());
+    let ps_add = await db.prepare("insert into users values (?, ?, ?, false, ?, '', ?, '', '');");
+    let res = await ps_add.run(undefined, POSTData.name, POSTData.pass, getToday(), sessionkey);
 
-    let as = await ps.all(POSTData.name);
-    if (as.length == 1) return "1; id=" + as[0].user_id;
+    return "1&id=" + res.lastID + "&sessionkey=" + sessionkey;
   } catch (e) { console.log(e); }
 
   return 0;
 }
 
 async function tryLogin(POSTData) {
-  if (isEmpty(POSTData.name)) return -1;
-  if (isEmpty(POSTData.pass)) return -1;
+  try {
+    if (isEmpty(POSTData.name)) return -1;
+    if (isEmpty(POSTData.pass)) return -1;
 
-  let ps = await db.prepare("select * from users where username=?;");
-  let as = await ps.all(POSTData.name);
-  if (as.length == 0) return -1;
-  if (as[0].password != POSTData.pass) return -1;
+    let ps = await db.prepare("select * from users where username=?;");
+    let as = await ps.all(POSTData.name);
+    if (as.length == 0) return -1;
+    if (as[0].password != POSTData.pass) return -1;
 
-  return as[0].user_id;
+    let ps_keycheck = await db.prepare("select * from uploads where key=?;");
+    let key = await generateNewKey(ps_keycheck);
+
+    let ps_updateSessionKey = await db.prepare("update users set sessionkey=? where user_id=?;");
+    await ps_updateSessionKey.run(key, as[0].user_id);
+    return "id=" + as[0].user_id + "&sessionkey=" + key;
+  }
+  catch(err) {
+    console.log(err);
+    return "id=" + -1 + "&sessionkey=" + -1;
+  };
 };
 
 async function tryFileUpload_Form(POSTData, url) {
@@ -152,20 +164,8 @@ async function tryFileUpload_Form(POSTData, url) {
   let screenshots = POSTData.scsh.split("|");
   if (screenshots.length > 8) return -1;
 
-  let key = Math.floor(Math.random() * 65536);
-
-  // ensures the key is not already in use by another upload
-  let unused_key = false;
   let ps_keycheck = await db.prepare("select * from uploads where key=?;");
-  while (!unused_key) {
-    let as = await ps_keycheck.all(key);
-    if (as.length == 0) {
-      unused_key = true;
-    }
-    else {
-      key = Math.floor(Math.random() * 65536);
-    };
-  };
+  let key = await generateNewKey(ps_keycheck);
 
   let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, '');");
   let res = await ps_add.run(undefined, POSTData.user_id, POSTData.name, POSTData.file, POSTData.scsh, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
@@ -629,6 +629,23 @@ async function getUserStats(contents) {
 
   //console.log("no_dnls= " + no_dnls + ", no_favs= " + no_favs + ", no_subs= " + no_subs);
   return { downloads: no_dnls, favourites: no_favs, submissions: no_subs };
+};
+
+async function generateNewKey(ps) {
+  let key = Math.floor(Math.random() * 65536);
+
+  // ensures the key is not already in use by another upload
+  let unused_key = false;
+  while (!unused_key) {
+    let as = await ps.all(key);
+    if (as.length == 0) {
+      unused_key = true;
+    }
+    else {
+      key = Math.floor(Math.random() * 65536);
+    };
+  };
+  return key;
 };
 
 // Check if a path is in or can be added to the set of site paths, in order

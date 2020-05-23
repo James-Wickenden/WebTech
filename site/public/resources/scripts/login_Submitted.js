@@ -58,9 +58,15 @@ function getParams(username, password) {
 }
 
 async function receive(response) {
-  //console.log(response.responseText);
+  let recv_id    = parseInt(response.responseText.split("&")[0].split("=")[1]);
+  let sessionkey = parseInt(response.responseText.split("&")[1].split("=")[1]);
+
   let l_status = document.getElementById('l_status');
-  if (response.responseText == "-1") return unsuccessful(l_status);
-  sessionStorage.setItem("user_id", parseInt(response.responseText));
+  if (recv_id < 0) return unsuccessful(l_status);
+  else successful(l_status);
+
+  sessionStorage.setItem("user_id", recv_id);
+  sessionStorage.setItem("sessionkey", sessionkey);
+
   window.location = "/home";
 };
