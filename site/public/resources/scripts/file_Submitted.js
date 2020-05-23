@@ -46,7 +46,6 @@ function updateStatusLabel(success, message) {
 }
 
 async function requestFileSubmission() {
-
   var xhttp_form = new XMLHttpRequest();
   xhttp_form.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -63,6 +62,8 @@ async function requestFileSubmission() {
 function getParams() {
   let res = "user_id=";
   res += sessionStorage.getItem("user_id");
+  res += "&sessionkey=";
+  res += sessionStorage.getItem("sessionkey");
   res += "&cate=";
   res += form["s_cats"].value;
   res += getSpecificParams();
@@ -93,6 +94,12 @@ function getFormData(key) {
   console.log("uploadName=" + uploadName);
   formData.append("uploadName", uploadName);
   formData.append("key", key);
+
+  let user_id = sessionStorage.getItem("user_id");
+  formData.append("user_id", user_id);
+  let sessionkey = sessionStorage.getItem("sessionkey");
+  formData.append("sessionkey", sessionkey);
+
   return formData;
 };
 
@@ -146,7 +153,7 @@ function getSpecificParams() {
   res += ("&desc=" + currentFormFields.desc);
   res += ("&scsh=" + currentFormFields.scsh_files);
   res += ("&cats=" + currentFormFields.other_cat);
-  
+
   return res;
 };
 

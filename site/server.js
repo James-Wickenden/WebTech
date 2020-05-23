@@ -150,11 +150,11 @@ async function tryFileUpload_Form(POSTData, url) {
   if (isEmpty(POSTData.file)) return -1;
   if (POSTData.cate == "o_other" && isEmpty(POSTData.cats)) return -1;
   if (POSTData.desc.length >= 1024) return -1;
+
   //if (isEmpty(POSTData.tags)) return -1;
 
-  // use user keys to validate
-  let ps = await db.prepare("select * from users where user_id=?;");
-  let as = await ps.all(POSTData.user_id);
+  let ps = await db.prepare("select * from users where user_id=? and sessionkey=?;");
+  let as = await ps.all(POSTData.user_id, POSTData.sessionkey);
   if (as.length == 0) return -1;
 
   ps = await db.prepare("select * from uploads where name=?;");
@@ -222,7 +222,7 @@ async function deliverPOST(request, response, POSTData, url) {
     return handleNavbar(request, response, POSTData.userid);
   }
   else if (url == "/post/getfav" || url == "/post/setfav") {
-    return handleFavouriting(request, response, POSTData.contentid, POSTData.userid);
+    return handleFavouriting(request, response, POSTData.contentid, POSTData.userid, POSTData.sessionkey);
   }
   else if (url == "/post/content/form") {
     let key_res = await tryFileUpload_Form(POSTData, url);
@@ -350,16 +350,14 @@ async function handleNavbar(request, response, user_id) {
   deliver(response, "application/xhtml+xml", template);
 };
 
-async function handleFavouriting(request, response, contentid, userid) {
+async function handleFavouriting(request, response, contentid, userid, sessionkey) {
   let url = request.url;
   if (userid == "-1") return deliver(response, "application/xhtml+xml", "false|get");
 
   try {
-    let ps_get_fav = await db.prepare("select favourites from users where user_id=?;");
-
-    let user_favourites = await ps_get_fav.get(parseInt(userid));
-    console.log(url);
-
+    let ps_get_fav = await db.prepare("select favourites from users where user_id=? and sessionkey=?;");
+    let user_favourites = await ps_get_fav.get(parseInt(userid),parseInt(sessionkey));
+    
     if (url == "/post/getfav") {
       if (user_favourites.favourites != "") {
         let favourites = user_favourites.favourites.split("|");
@@ -436,12 +434,16 @@ async function handleDownload(request, response) {
   filestream.pipe(response);
 };
 
-async function validateUploadKey(fields) {
-  let ps = await db.prepare("select * from uploads where name=? and key=?");
-  let as = await ps.all(fields.uploadName[0], fields.key[0]);
-  if (as.length != 1) return -1;
+async function validateKeys(fields) {
+  let ps_uploads = await db.prepare("select * from uploads where name=? and key=?");
+  let as_uploads = await ps_uploads.all(fields.uploadName[0], fields.key[0]);
+  if (as_uploads.length != 1) return -1;
 
-  return as[0].upload_id;
+  let ps_users = await db.prepare("select * from users where user_id=? and sessionkey=?");
+  let as_users = await ps_users.all(fields.user_id[0], fields.sessionkey[0]);
+  if (as_users.length != 1) return -1;
+
+  return as_uploads[0].upload_id;
 };
 
 // written with help from:
@@ -469,7 +471,7 @@ function getRequestData(request, response, callback, url) {
     form.uploadDir = uploadstmp;
 
     form.parse(request, async function(err, fields, files) {
-      let valid_id = await validateUploadKey(fields);
+      let valid_id = await validateKeys(fields);
       callback(request, response, files, valid_id);
     });
   }

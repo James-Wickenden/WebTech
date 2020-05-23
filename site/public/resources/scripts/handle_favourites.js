@@ -1,15 +1,20 @@
 "use strict";
 
+var contentid;
+var sessionkey;
+var user_id;
+
 addEventListener('load', loadContentUserStats);
 
 async function loadContentUserStats() {
   document.getElementById("heart_link").addEventListener("click", clickFavourite);
   document.getElementById("down_link").addEventListener("click", clickDownload);
 
-  let user_id = sessionStorage.getItem("user_id");
+  user_id = sessionStorage.getItem("user_id");
   if (user_id === null) user_id = -1;
   if (user_id == -1) return;
-  let contentid = document.getElementById('content_id').innerHTML;
+  contentid = document.getElementById('content_id').innerHTML;
+  sessionkey = sessionStorage.getItem("sessionkey");
 
   document.getElementById("heart_link").innerHTML = "Favourite";
 
@@ -21,7 +26,7 @@ async function loadContentUserStats() {
   };
   xhttp.open("POST", "/post/getfav", true);
   xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  xhttp.send("contentid=" + contentid + "&userid=" + user_id);
+  xhttp.send("contentid=" + contentid + "&userid=" + user_id + "&sessionkey=" + sessionkey);
 };
 
 function setFav(response) {
@@ -41,11 +46,6 @@ function clickFavourite(event) {
   event.preventDefault();
   console.log("Clicked favourite");
 
-  let user_id = sessionStorage.getItem("user_id");
-  if (user_id === null) user_id = -1;
-  if (user_id == -1) return;
-  let contentid = document.getElementById('content_id').innerHTML;
-
   let xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -54,7 +54,7 @@ function clickFavourite(event) {
   };
   xhttp.open("POST", "/post/setfav", true);
   xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  xhttp.send("contentid=" + contentid + "&userid=" + user_id);
+  xhttp.send("contentid=" + contentid + "&userid=" + user_id + "&sessionkey=" + sessionkey);
 };
 
 function clickDownload(event) {
