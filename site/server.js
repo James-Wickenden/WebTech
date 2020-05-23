@@ -279,25 +279,25 @@ async function handleMain(request, response) {
   switch (request.url) {
     default:         {
       page += "class='active'" + ts[++i] + ts[++i] + ts[++i] + ts[++i];
-      page += "Map desc" + ts[++i];
+      page += "This section contains user-created maps." + ts[++i];
       page += await loopMainContent("o_map") + ts[++i];
       break;
     }
     case "/configs": {
       page += ts[++i] + "class='active'" + ts[++i] + ts[++i] + ts[++i];
-      page += "Config desc" + ts[++i];
+      page += "This section contains custom command configs." + ts[++i];
       page += await loopMainContent("o_config") + ts[++i];
       break;
     }
     case "/models":  {
       page += ts[++i] + ts[++i] + "class='active'" + ts[++i] + ts[++i];
-      page += "Model desc" + ts[++i];
+      page += "This section contains custom models for use in-game." + ts[++i];
       page += await loopMainContent("o_model") + ts[++i];
       break;
     }
     case "/other":   {
       page += ts[++i] + ts[++i] + ts[++i] + "class='active'" + ts[++i];
-      page += "Other desc" + ts[++i];
+      page += "This section contains other user-created content with specified custom categories." + ts[++i];
       page += await loopMainContent("o_other") + ts[++i];
       break;
     }
@@ -501,6 +501,8 @@ async function loopMainContent(category) {
       row += ts[0] + "/content/" + sm.upload_id + ts[++i];
       row += parseContentThumbnail(sm) + ts[++i] + "/content/" + sm.upload_id + ts[++i] + sm.name + ts[++i];
       row += "/user/" + sm.user_id + ts[++i] + user.username + ts[++i];
+      if (category != "o_other") row += "" + ts[++i];
+      else row += "<h3>Custom category: " + sm.other_spec + "</h3>" + ts[++i];
       row += sm.no_downloads + ts[++i] + sm.no_favourites + ts[++i] + sm.upload_date + ts[++i];
       row += sm.description + ts[++i];
     }

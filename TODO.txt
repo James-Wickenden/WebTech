@@ -32,7 +32,7 @@ Database:
    add comment support
 
 Other:
-_  add main page category descriptions
+*  add main page category descriptions
 *  add support for generic screenshots/ make screenshots not mandatory
 *  refactor file_submitted.js
    comment javascript methods
