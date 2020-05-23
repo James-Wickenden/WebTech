@@ -34,7 +34,7 @@ Database:
 Other:
 _  add main page category descriptions
 *  add support for generic screenshots/ make screenshots not mandatory
-_  refactor file_submitted.js
+*  refactor file_submitted.js
    comment javascript methods
    search bar
    tags!

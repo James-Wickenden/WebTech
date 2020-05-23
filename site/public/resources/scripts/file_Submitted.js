@@ -2,8 +2,10 @@
 
 addEventListener('load', initHandler);
 
+var currentFormFields;
+var form;
 function initHandler() {
-  let form = document.getElementById("upload_form");
+  form = document.getElementById("upload_form");
   function handleForm(event) { submitForm(event); };
   form.addEventListener('submit', handleForm);
 };
@@ -11,11 +13,21 @@ function initHandler() {
 async function submitForm(event) {
   event.preventDefault();
 
-  let form = document.getElementById('upload_form');
   let status = 0;
   let l_status = document.getElementById('l_status');
 
-  if (!allFieldsFilled(form)) {
+  let cat_ext = form["s_cats"].value.split("_").pop();
+  currentFormFields = {};
+
+  currentFormFields.name = form["s_name_" + cat_ext].value;
+  currentFormFields.file = form["s_file_" + cat_ext].files[0];
+  currentFormFields.desc = form["s_desc_" + cat_ext].value;
+  currentFormFields.category = form["s_cats"].value;
+  currentFormFields.other_cat = form["s_cats_other"].value;
+  currentFormFields.scsh_files = parseMultipleFileNames(form["s_scsh_" + cat_ext]);
+  console.log(currentFormFields);
+
+  if (!allFieldsFilled()) {
     updateStatusLabel(false, "One or more required fields are missing.")
     return;
   };
@@ -23,7 +35,7 @@ async function submitForm(event) {
   console.log("Submitting file submission to server for validation...")
   updateStatusLabel(false, "")
 
-  requestFileSubmission(form);
+  requestFileSubmission();
 };
 
 function updateStatusLabel(success, message) {
@@ -33,7 +45,7 @@ function updateStatusLabel(success, message) {
   l_status.innerHTML = message;
 }
 
-async function requestFileSubmission(form) {
+async function requestFileSubmission() {
 
   var xhttp_form = new XMLHttpRequest();
   xhttp_form.onreadystatechange = function() {
@@ -43,21 +55,21 @@ async function requestFileSubmission(form) {
   };
   xhttp_form.open("POST", "/post/content/form", true);
   xhttp_form.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  xhttp_form.send(getParams(form));
+  xhttp_form.send(getParams());
 
   updateStatusLabel(false, "");
 };
 
-function getParams(form) {
+function getParams() {
   let res = "user_id=";
   res += sessionStorage.getItem("user_id");
   res += "&cate=";
   res += form["s_cats"].value;
-  res += getSpecificParams(form);
+  res += getSpecificParams();
   return res;
 }
 
-function getFormData(form, key) {
+function getFormData(key) {
   let formData = new FormData();
   let file;
   let scsh_str = "";
@@ -122,52 +134,19 @@ async function sendFormData(key) {
   };
   xhttp_data.open("POST", "/post/content/data", true);
   //xhttp_data.setRequestHeader("Content-Type", "multipart/form-data");
-  let formData = getFormData(form, key);
+  let formData = getFormData(key);
   //console.log(formData.get("file"));
   xhttp_data.send(formData);
 };
 
-function getSpecificParams(form) {
+function getSpecificParams() {
   let res = "";
-
-  switch(form["s_cats"].value) {
-    case "o_map": {
-      res += ("&name=" + form["s_name_map"].value);
-      res += ("&file=" + form["s_file_map"].files[0].name);
-      res += ("&desc=" + form["s_desc_map"].value);
-      res += ("&scsh=" + parseMultipleFileNames(form["s_scsh_map"]));
-      //res += ("&tags=" + form["s_tags_map"].value);
-      break;
-    }
-    case "o_config": {
-      res += ("&name=" + form["s_name_config"].value);
-      res += ("&file=" + form["s_file_config"].files[0].name);
-      res += ("&desc=" + form["s_desc_config"].value);
-      res += ("&scsh=" + parseMultipleFileNames(form["s_scsh_config"]));
-      //res += ("&tags=" + form["s_tags_config"].value);
-      break;
-    }
-    case "o_model": {
-      res += ("&name=" + form["s_name_model"].value);
-      res += ("&file=" + form["s_file_model"].files[0].name);
-      res += ("&desc=" + form["s_desc_model"].value);
-      res += ("&scsh=" + parseMultipleFileNames(form["s_scsh_model"]));
-      //res += ("&tags=" + form["s_tags_model"].value);
-      break;
-    }
-    case "o_other": {
-      res += ("&name=" + form["s_name_other"].value);
-      res += ("&cats=" + form["s_cats_other"].value);
-      res += ("&file=" + form["s_file_other"].files[0].name);
-      res += ("&desc=" + form["s_desc_other"].value);
-      res += ("&scsh=" + parseMultipleFileNames(form["s_scsh_other"]));
-      //res += ("&tags=" + form["s_tags_other"].value);
-      break;
-    }
-    default: {
-      break;
-    }
-  };
+  res += ("&name=" + currentFormFields.name);
+  res += ("&file=" + currentFormFields.file.name);
+  res += ("&desc=" + currentFormFields.desc);
+  res += ("&scsh=" + currentFormFields.scsh_files);
+  res += ("&cats=" + currentFormFields.other_cat);
+  
   return res;
 };
 
@@ -182,43 +161,15 @@ function parseMultipleFileNames(scsh) {
   return res;
 };
 
-function allFieldsFilled(form) {
+function allFieldsFilled() {
   if (!(sessionStorage.getItem("user_id") > 0)) return false;
-  switch(form["s_cats"].value) {
-    case "o_map": {
-      if (form["s_name_map"].value == '') return false;
-      if (form["s_file_map"].value == '') return false;
-      if (form["s_desc_map"].value == '') return false;
-      //if (form["s_tags_map"].value == '') return false;
-      break;
-    }
-    case "o_config": {
-      if (form["s_name_config"].value == '') return false;
-      if (form["s_file_config"].value == '') return false;
-      if (form["s_desc_config"].value == '') return false;
-      //if (form["s_tags_config"].value == '') return false;
-      break;
-    }
-    case "o_model": {
-      if (form["s_name_model"].value == '') return false;
-      if (form["s_file_model"].value == '') return false;
-      if (form["s_desc_model"].value == '') return false;
-      //if (form["s_tags_model"].value == '') return false;
-      break;
-    }
-    case "o_other": {
-      if (form["s_name_other"].value == '') return false;
-      if (form["s_cats_other"].value == '') return false;
-      if (form["s_file_other"].value == '') return false;
-      if (form["s_desc_other"].value == '') return false;
-      //if (form["s_tags_other"].value == '') return false;
-      break;
-    }
-    default: {
-      console.log("Unselected submission type");
-      break;
-    }
-  };
+
+  if (currentFormFields.name == '') return false;
+  if (currentFormFields.file === undefined) return false;
+  if (currentFormFields.desc == '') return false;
+  if (currentFormFields.category == '') return false;
+  if (currentFormFields.other_cat == '' && currentFormFields.category == "o_other") return false;
+  if (currentFormFields.scsh_files.split("|").length > 8) return false;
 
   console.log("All required fields filled.");
   return true;
