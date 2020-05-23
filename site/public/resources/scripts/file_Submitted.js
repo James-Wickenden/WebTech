@@ -60,25 +60,20 @@ function getParams(form) {
 function getFormData(form, key) {
   let formData = new FormData();
   let file;
-
+  let scsh_str = "";
   switch(form["s_cats"].value) {
-    case "o_map": file = form["s_file_map"].files[0]; break;
-    case "o_config": file = form["s_file_config"].files[0]; break;
-    case "o_model": file = form["s_file_model"].files[0]; break;
-    case "o_other": file = form["s_file_other"].files[0]; break;
+    case "o_map": file = form["s_file_map"].files[0]; scsh_str = "s_scsh_map"; break;
+    case "o_config": file = form["s_file_config"].files[0]; scsh_str = "s_scsh_config"; break;
+    case "o_model": file = form["s_file_model"].files[0]; scsh_str = "s_scsh_model"; break;
+    case "o_other": file = form["s_file_other"].files[0]; scsh_str = "s_scsh_other"; break;
     default: console.log(form["s_cats"].value); break;
   };
 
   formData.append("file", file);
 
-  if (form["s_cats"].value == "o_map") {
-    for (var i = 0; i < form["s_scsh_map"].files.length; ++i) {
-      formData.append("scsh_" + i, form["s_scsh_map"].files[i]);
-    };
-  }
-  else if (form["s_cats"].value == "o_model") {
-    for (var i = 0; i < form["s_scsh_model"].files.length; ++i) {
-      formData.append("scsh_" + i, form["s_scsh_model"].files[i]);
+  for (var i = 0; i < form[scsh_str].files.length; ++i) {
+    if (form[scsh_str].files[i].name != file.name) {
+      formData.append("scsh_" + i, form[scsh_str].files[i]);
     };
   };
 
@@ -148,7 +143,7 @@ function getSpecificParams(form) {
       res += ("&name=" + form["s_name_config"].value);
       res += ("&file=" + form["s_file_config"].files[0].name);
       res += ("&desc=" + form["s_desc_config"].value);
-      res += ("&scsh=" + parseMultipleFileNames(form["s_scsh_map"]));
+      res += ("&scsh=" + parseMultipleFileNames(form["s_scsh_config"]));
       //res += ("&tags=" + form["s_tags_config"].value);
       break;
     }
@@ -165,7 +160,7 @@ function getSpecificParams(form) {
       res += ("&cats=" + form["s_cats_other"].value);
       res += ("&file=" + form["s_file_other"].files[0].name);
       res += ("&desc=" + form["s_desc_other"].value);
-      res += ("&scsh=" + parseMultipleFileNames(form["s_scsh_map"]));
+      res += ("&scsh=" + parseMultipleFileNames(form["s_scsh_other"]));
       //res += ("&tags=" + form["s_tags_other"].value);
       break;
     }

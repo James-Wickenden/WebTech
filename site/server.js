@@ -136,9 +136,11 @@ async function tryFileUpload_Form(POSTData, url) {
   if (isEmpty(POSTData.cate)) return -1;
   if (isEmpty(POSTData.name)) return -1;
   if (isEmpty(POSTData.file)) return -1;
+  if (POSTData.cate == "o_other" && isEmpty(POSTData.cats)) return -1;
   if (POSTData.desc.length >= 1024) return -1;
   //if (isEmpty(POSTData.tags)) return -1;
 
+  // use user keys to validate
   let ps = await db.prepare("select * from users where user_id=?;");
   let as = await ps.all(POSTData.user_id);
   if (as.length == 0) return -1;
@@ -147,29 +149,8 @@ async function tryFileUpload_Form(POSTData, url) {
   as = await ps.all(POSTData.name);
   if (as.length != 0) return -1;
 
-  switch(POSTData.cat) {
-    case "o_map": {
-      let screenshots = POSTData.scsh.split("|");
-      if (screenshots.length > 8) return -1;
-      break;
-    }
-    case "o_config": {
-
-      break;
-    }
-    case "o_model": {
-      let screenshots = POSTData.scsh.split("|");
-      if (screenshots.length > 8) return -1;
-      break;
-    }
-    case "o_other": {
-      if (isEmpty(POSTData.cats)) return -1;
-      break;
-    }
-    default: {
-      break;
-    }
-  };
+  let screenshots = POSTData.scsh.split("|");
+  if (screenshots.length > 8) return -1;
 
   let key = Math.floor(Math.random() * 65536);
 
