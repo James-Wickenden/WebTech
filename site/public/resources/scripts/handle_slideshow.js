@@ -7,9 +7,13 @@ var cur_slide = 0;
 
 async function loadSlideController() {
   slides = document.getElementsByClassName("slide");
+  if (slides.length == 0) {
+    document.getElementById('slideshow').style.display = "none";
+    return;
+  };
 
-  let rightslide =   document.getElementById('rightslide');
-  let leftslide =   document.getElementById('leftslide');
+  let rightslide = document.getElementById('rightslide');
+  let leftslide  = document.getElementById('leftslide');
   rightslide.addEventListener("click", function(event) { event.preventDefault(); updateSlides(1); });
   leftslide.addEventListener("click", function(event) { event.preventDefault(); updateSlides(-1); });
 

@@ -268,12 +268,12 @@ async function handleContent(request, response, url) {
   let user = await ps_user.get(content.user_id);
   if (isEmpty(user)) return fail(response, Error, "Database error; uploaded content has no associated user.");
 
-  let template = await fs.readFile(root + "/map.html","utf8");
+  let template = await fs.readFile(root + "/content.html","utf8");
   if (isEmpty(template)) return fail(response, Error, "Content file not found.");
   let ts = template.split("$");
 
   let i = 0;
-  let page = ts[i] + content.name + ts[++i] + content.upload_id + ts[++i];
+  let page = ts[i] + content.name + ts[++i] + parseCategory(content) + ts[++i] + content.upload_id + ts[++i];
   page += user.user_id + ts[++i] + user.username + ts[++i];
   page += loopContentImages(content) + ts[++i];
   page += content.no_downloads + ts[++i] + content.no_favourites + ts[++i] + content.upload_id + ts[++i];
@@ -402,13 +402,13 @@ async function handleFavouriting(request, response, contentid, userid) {
         new_favourites = contentid + "|";
       };
 
-      let ps_upd_fav = await db.prepare("update users set favourites=? where user_id=?;");
-      let ps_upd_map = await db.prepare("update uploads set no_favourites=? where upload_id=?;");
-      let ps_map_fav = await db.prepare("select no_favourites from uploads where upload_id=?")
+      let ps_upd_favours = await db.prepare("update users set favourites=? where user_id=?;");
+      let ps_upd_content = await db.prepare("update uploads set no_favourites=? where upload_id=?;");
+      let ps_get_ctn_fav = await db.prepare("select no_favourites from uploads where upload_id=?")
 
-      await ps_upd_fav.run(new_favourites, parseInt(userid));
-      let cur_no_favourites = await ps_map_fav.get(parseInt(contentid));
-      await ps_upd_map.run((foundfav ? (cur_no_favourites.no_favourites - 1) : (cur_no_favourites.no_favourites + 1)), parseInt(contentid));
+      await ps_upd_favours.run(new_favourites, parseInt(userid));
+      let cur_no_favourites = await ps_get_ctn_fav.get(parseInt(contentid));
+      await ps_upd_content.run((foundfav ? (cur_no_favourites.no_favourites - 1) : (cur_no_favourites.no_favourites + 1)), parseInt(contentid));
 
       return deliver(response, "application/xhtml+xml", (!foundfav).toString() + "|set");
     };
@@ -584,6 +584,16 @@ function loopContentImages(content) {
   };
   console.log(scsh_str);
   return scsh_str;
+};
+
+function parseCategory(content) {
+  switch (content.category) {
+    default: return "";
+    case "o_map": return "Map";
+    case "o_config": return "Config";
+    case "o_model": return "Model";
+    case "o_other": return content.other_spec;
+  };
 };
 
 async function getRandomUrl() {
