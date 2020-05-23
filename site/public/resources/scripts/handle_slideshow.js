@@ -6,18 +6,23 @@ var slides;
 var cur_slide = 0;
 
 async function loadSlideController() {
+  let rightslide = document.getElementById('rightslide');
+  let leftslide  = document.getElementById('leftslide');
+
   slides = document.getElementsByClassName("slide");
   if (slides.length == 0) {
     document.getElementById('slideshow').style.display = "none";
-    return;
+  }
+  else if (slides.length == 1) {
+    rightslide.style.display = "none";
+    leftslide.style.display = "none";
+  }
+  else {
+    rightslide.addEventListener("click", function(event) { event.preventDefault(); updateSlides(1); });
+    leftslide.addEventListener("click", function(event) { event.preventDefault(); updateSlides(-1); });
+
+    updateSlides(0);
   };
-
-  let rightslide = document.getElementById('rightslide');
-  let leftslide  = document.getElementById('leftslide');
-  rightslide.addEventListener("click", function(event) { event.preventDefault(); updateSlides(1); });
-  leftslide.addEventListener("click", function(event) { event.preventDefault(); updateSlides(-1); });
-
-  updateSlides(0);
 };
 
 function updateSlides(diff) {

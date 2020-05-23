@@ -16,7 +16,7 @@ User:
    make an SVG for empty main page categories
    make an SVG for failed URLs
    animate slide transitions using https://www.w3schools.com/howto/howto_js_slideshow.asp
-_  remove slide arrows for one screenshot case
+*  remove slide arrows for one screenshot case
 
 Sever:
 *  store user data when navigating the site
@@ -34,7 +34,7 @@ Database:
 Other:
 _  add main page category descriptions
 *  add support for generic screenshots/ make screenshots not mandatory
-   refactor file_submitted.js
+_  refactor file_submitted.js
    comment javascript methods
    search bar
    tags!
