@@ -15,6 +15,7 @@ User:
 !  make an SVG site logo
    make an SVG for empty main page categories
    make an SVG for failed URLs
+   animate slide transitions using https://www.w3schools.com/howto/howto_js_slideshow.asp
 
 Sever:
 *  store user data when navigating the site
@@ -30,12 +31,12 @@ Database:
    add comment support
 
 Other:
+_  add main page category descriptions
    comment javascript methods
    search bar
+   tags!
 *  random page generation
 *  switch content folder saving to use ids
 *  remove tmp variable in uploading
 *  prevent non-logged in users from uploading
-!_ fix the content categories discrepancy!
-          make all content have screenshots!
-          no difference between content types!
+* fix the content categories discrepancy!

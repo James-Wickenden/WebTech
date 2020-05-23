@@ -148,6 +148,7 @@ function getSpecificParams(form) {
       res += ("&name=" + form["s_name_config"].value);
       res += ("&file=" + form["s_file_config"].files[0].name);
       res += ("&desc=" + form["s_desc_config"].value);
+      res += ("&scsh=" + parseMultipleFileNames(form["s_scsh_map"]));
       //res += ("&tags=" + form["s_tags_config"].value);
       break;
     }
@@ -164,6 +165,7 @@ function getSpecificParams(form) {
       res += ("&cats=" + form["s_cats_other"].value);
       res += ("&file=" + form["s_file_other"].files[0].name);
       res += ("&desc=" + form["s_desc_other"].value);
+      res += ("&scsh=" + parseMultipleFileNames(form["s_scsh_map"]));
       //res += ("&tags=" + form["s_tags_other"].value);
       break;
     }
@@ -192,7 +194,6 @@ function allFieldsFilled(form) {
       if (form["s_name_map"].value == '') return false;
       if (form["s_file_map"].value == '') return false;
       if (form["s_desc_map"].value == '') return false;
-      if (form["s_scsh_map"].value == '') return false;
       //if (form["s_tags_map"].value == '') return false;
       break;
     }
@@ -207,7 +208,6 @@ function allFieldsFilled(form) {
       if (form["s_name_model"].value == '') return false;
       if (form["s_file_model"].value == '') return false;
       if (form["s_desc_model"].value == '') return false;
-      if (form["s_scsh_model"].value == '') return false;
       //if (form["s_tags_model"].value == '') return false;
       break;
     }

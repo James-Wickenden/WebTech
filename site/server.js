@@ -187,10 +187,11 @@ async function tryFileUpload_Form(POSTData, url) {
   };
 
   let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, '');");
-  await ps_add.run(undefined, POSTData.user_id, POSTData.name, POSTData.file, POSTData.scsh, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
+  let res = await ps_add.run(undefined, POSTData.user_id, POSTData.name, POSTData.file, POSTData.scsh, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
+  let newUpload = res.lastID + "|";
 
-  let ps_newsub = await db.prepare("update users set submissions = submissions || (select upload_id from uploads where name = ?) where user_id =?;")
-  ps_newsub.run(POSTData.name, POSTData.user_id);
+  let ps_newsub = await db.prepare("update users set submissions = submissions || ? where user_id =?;")
+  ps_newsub.run(newUpload, POSTData.user_id);
 
   return key;
 };
@@ -205,12 +206,14 @@ async function tryFileUpload_Data(files, content_id) {
   let uploadsDir  = process.cwd() + "\\public\\uploads\\" + content_id + "\\";
   mkdirp.sync(uploadsDir);
 
+  let counter = 0;
   await Object.keys(files).forEach(async function(name) {
     path = files[name][0].path;
     filename = files[name][0].originalFilename;
     await fs.rename(path, uploadsDir + filename);
+    counter++;
   });
-  rimraf.sync(uploadstmp);
+  if (counter == files.length) rimraf.sync(uploadstmp);
 
   console.log('Upload completed!');
   return content_id;
@@ -515,7 +518,7 @@ async function loopMainContent(category) {
       let user = await ps_user.get(sm.user_id);
       let i = 0;
       row += ts[0] + "/content/" + sm.upload_id + ts[++i];
-      row += "/resources/img/bsp_png.png" + ts[++i] + "/content/" + sm.upload_id + ts[++i] + sm.name + ts[++i];
+      row += parseContentThumbnail(sm) + ts[++i] + "/content/" + sm.upload_id + ts[++i] + sm.name + ts[++i];
       row += "/user/" + sm.user_id + ts[++i] + user.username + ts[++i];
       row += sm.no_downloads + ts[++i] + sm.no_favourites + ts[++i] + sm.upload_date + ts[++i];
       row += sm.description + ts[++i];
@@ -594,6 +597,19 @@ function parseCategory(content) {
     case "o_model": return "Model";
     case "o_other": return content.other_spec;
   };
+};
+
+function parseContentThumbnail(content) {
+  if (content.screenshots == '') {
+    switch (content.category) {
+      default:         return "/resources/img/blank.png";
+      case "o_map":    return "/resources/img/bsp_png.png";
+      case "o_config": return "/resources/img/cfg_png.png";
+      case "o_model":  return "/resources/img/mod_png.png";
+      case "o_other":  return "/resources/img/oth_png.png";
+    };
+  };
+  return "/uploads/" + content.upload_id + "/" + content.screenshots.split("|")[0];
 };
 
 async function getRandomUrl() {
