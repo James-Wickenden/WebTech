@@ -12,9 +12,9 @@ mkdir public\uploads\1\
 mkdir public\uploads\2\
 
 copy default_DB_data\map.bsp public\uploads\1\map.bsp
-copy default_DB_data\screenshot1.png public\uploads\1\screenshot1.png
-copy default_DB_data\screenshot2.png public\uploads\1\screenshot2.png
-copy default_DB_data\screenshot3.png public\uploads\1\screenshot3.png
+copy default_DB_data\scsh1.png public\uploads\1\scsh1.png
+copy default_DB_data\scsh2.png public\uploads\1\scsh2.png
+copy default_DB_data\scsh3.png public\uploads\1\scsh3.png
 copy default_DB_data\other.cfg public\uploads\2\other.cfg
 
 echo Ensure /public/uploads folder exists and contains necessary files.

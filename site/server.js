@@ -186,8 +186,8 @@ async function tryFileUpload_Form(POSTData, url) {
     };
   };
 
-  let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, '');");
-  await ps_add.run(undefined, POSTData.user_id, POSTData.name, POSTData.file, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
+  let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, '');");
+  await ps_add.run(undefined, POSTData.user_id, POSTData.name, POSTData.file, POSTData.scsh, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
 
   let ps_newsub = await db.prepare("update users set submissions = submissions || (select upload_id from uploads where name = ?) where user_id =?;")
   ps_newsub.run(POSTData.name, POSTData.user_id);
@@ -205,7 +205,7 @@ async function tryFileUpload_Data(files, content_id) {
   let uploadsDir  = process.cwd() + "\\public\\uploads\\" + content_id + "\\";
   mkdirp.sync(uploadsDir);
 
-  Object.keys(files).forEach(async function(name) {
+  await Object.keys(files).forEach(async function(name) {
     path = files[name][0].path;
     filename = files[name][0].originalFilename;
     await fs.rename(path, uploadsDir + filename);
@@ -273,13 +273,13 @@ async function handleContent(request, response, url) {
   let ts = template.split("$");
 
   let i = 0;
-  let page = ts[i] + content.name + ts[++i] + content.upload_id + ts[++i] + user.username + ts[++i];
+  let page = ts[i] + content.name + ts[++i] + content.upload_id + ts[++i];
+  page += user.user_id + ts[++i] + user.username + ts[++i];
+  page += loopContentImages(content) + ts[++i];
   page += content.no_downloads + ts[++i] + content.no_favourites + ts[++i] + content.upload_id + ts[++i];
   page += content.description + ts[++i] + content.upload_date + ts[++i];
   page += content.comments.length + ts[++i] + content.comments + ts[++i];
 
-  // TODO: add image handling using:
-  // https://stackoverflow.com/questions/5823722/how-to-serve-an-image-using-nodejs
   deliver(response, "application/xhtml+xml", page);
 };
 
@@ -572,6 +572,19 @@ async function loopUserSubmissions(contents) {
 
   return loop_html;
 }
+
+function loopContentImages(content) {
+  let screenshots = content.screenshots.split("|");
+  let scsh_str = "";
+  for (scsh of screenshots) {
+    let ext = scsh.split(".")[1];
+    if (scsh != '' && (ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "gif")) {
+      scsh_str += "<img src='/uploads/" + content.upload_id + "/" + scsh + "' class='slide' type='image' height='500px'></img>\n";
+    };
+  };
+  console.log(scsh_str);
+  return scsh_str;
+};
 
 async function getRandomUrl() {
   console.log("Generating a random page id...");
