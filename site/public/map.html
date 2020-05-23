@@ -13,6 +13,7 @@
 
   <script src="/resources/scripts/insert_navbar.js" defer="defer"></script>
   <script src="/resources/scripts/handle_favourites.js" defer="defer"></script>
+  <script src="/resources/scripts/handle_slideshow.js" defer="defer"></script>
 </head>
 
 <body>
@@ -25,11 +26,13 @@
       <h2>by <a href="/user/1">$</a></h2>
 
       <div class="container">
-        <a href="#"><i class="fa fa-arrow-left"></i>&#160;</a>
+        <a id="leftslide" href=''><i class="fa fa-arrow-left"></i>&#160;</a>
         <div class="container" style= "width:80%; height:500px;">
-          <img src="/resources/img/bsp_png.png" type="image/png" height="500px"></img>
+          <img src="/resources/img/bsp_png.png" class="slide" type="image" height="500px"></img>
+          <img src="/resources/img/mod_png.png" class="slide" type="image" height="500px"></img>
+          <img src="/resources/img/oth_png.png" class="slide" type="image" height="500px"></img>
         </div>
-        <a href="#">&#160;<i class="fa fa-arrow-right"></i></a>
+        <a id="rightslide" href=''>&#160;<i class="fa fa-arrow-right"></i></a>
       </div>
 
       <div class="border"></div>
