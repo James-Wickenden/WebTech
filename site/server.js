@@ -307,11 +307,10 @@ async function handleMain(request, response) {
 };
 
 async function handleUser(request, response, url) {
-  console.log("url=" + url);
   let user_id = parseInt(url.split("/").pop());
   if (user_id == -1) return deliver(response, "application/xhtml+xml", "You must log in before you can access your homepage");
 
-  let ps_user = await db.prepare("select * from users where user_id=?");
+  let ps_user = await db.prepare("select * from users where user_id=?;");
   let user = await ps_user.get(user_id);
   //console.log(user);
   if (isEmpty(user)) return deliver(response, "application/xhtml+xml", "No such user with that id");
@@ -357,7 +356,7 @@ async function handleFavouriting(request, response, contentid, userid, sessionke
   try {
     let ps_get_fav = await db.prepare("select favourites from users where user_id=? and sessionkey=?;");
     let user_favourites = await ps_get_fav.get(parseInt(userid),parseInt(sessionkey));
-    
+
     if (url == "/post/getfav") {
       if (user_favourites.favourites != "") {
         let favourites = user_favourites.favourites.split("|");
@@ -404,11 +403,13 @@ async function handleFavouriting(request, response, contentid, userid, sessionke
 async function handleProfileUpdate(request, response, POSTData) {
   if (POSTData.userid == "-1") return deliver(response, "application/xhtml+xml", "fail");
   let user_id = parseInt(POSTData.userid);
+  let sessionkey = parseInt(POSTData.sessionkey);
   let newdesc = POSTData.newdesc;
   console.log("new description submitted by user_id=" + user_id + ": " + newdesc);
 
-  let ps_update = await db.prepare("update users set about=? where user_id=?;");
-  ps_update.run(newdesc, user_id);
+  let ps_update = await db.prepare("update users set about=? where user_id=? and sessionkey=?;");
+  let res = await ps_update.run(newdesc, user_id, sessionkey);
+  if (res.changes != 1) return deliver(response, "application/xhtml+xml", "fail");
   deliver(response, "application/xhtml+xml", "success");
 };
 

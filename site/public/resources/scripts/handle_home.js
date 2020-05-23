@@ -1,14 +1,16 @@
 "use strict";
 
 addEventListener('load', loadHomeSession);
-var user_id;
+var user_id, sessionkey;
 var desc_editor, cur_desc;
-async function loadHomeSession() {
 
+async function loadHomeSession() {
   user_id = parseInt(window.location.pathname.split("/").pop());
   if (window.location.pathname == "/home"){
     user_id = sessionStorage.getItem("user_id");
   };
+  if (user_id === null) user_id = -1;
+  sessionkey = sessionStorage.getItem("sessionkey");
 
   let xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
@@ -18,8 +20,6 @@ async function loadHomeSession() {
   };
   xhttp.open("POST", "/post/userpage", true);
   xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  if (user_id === null) user_id = -1;
-  //console.log("userid=" + user_id);
   xhttp.send("userid=" + user_id);
 };
 
@@ -66,7 +66,7 @@ function submitNewDesc(event) {
   };
   xhttp.open("POST", "/post/newdesc", true);
   xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  xhttp.send("userid=" + user_id + "&newdesc=" + newdesc);
+  xhttp.send("userid=" + user_id + "&newdesc=" + newdesc + "&sessionkey=" + sessionkey);
 };
 
 function receiveNewDesc(response) {
