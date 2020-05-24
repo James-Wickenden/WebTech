@@ -217,14 +217,18 @@ async function deliverPOST(request, response, POSTData, url) {
   else if (url == "/post/userpage") {
     return handleUser(request, response, "/user/" + POSTData.userid);
   }
-  else if (url == "/post/adminpage") {
+  else if (url == "/post/admin/page") {
     return handleAdmin(request, response, POSTData.userid, POSTData.sessionkey);
+  }
+  else if (url == "/post/admin/update") {
+    console.log(POSTData);
+    //return handleAdmin(request, response, POSTData);
   }
   else if (url == "/post/newdesc") {
     return handleProfileUpdate(request, response, POSTData);
   }
   else if (url == "/post/navbar") {
-    return handleNavbar(request, response, POSTData.userid);
+    return handleNavbar(request, response, POSTData.userid, POSTData.sessionkey);
   }
   else if (url == "/post/getfav" || url == "/post/setfav") {
     return handleFavouriting(request, response, POSTData.contentid, POSTData.userid, POSTData.sessionkey);
@@ -317,7 +321,7 @@ async function handleUser(request, response, url) {
 
   let ps_user = await db.prepare("select * from users where user_id=?;");
   let user = await ps_user.get(user_id);
-  //console.log(user);
+
   if (isEmpty(user)) return deliver(response, "application/xhtml+xml", "No such user with that id");
 
   let template = await fs.readFile("./HTML_templates/user_page.html","utf8");
@@ -330,6 +334,7 @@ async function handleUser(request, response, url) {
   let submissions_html = await loopUserSubmissions(contents);
 
   let i = 0;
+
   let page = ts[i] + user.username + ts[++i];
   page += submissions_html + ts[++i];
   page += user.join_date + ts[++i] + user_stats.downloads + ts[++i];
@@ -339,7 +344,15 @@ async function handleUser(request, response, url) {
   deliver(response, "application/xhtml+xml", page);
 };
 
-async function handleNavbar(request, response, user_id) {
+async function handleNavbar(request, response, user_id, sessionkey) {
+  let ps_users = await db.prepare("select * from users where user_id=? and sessionkey=?");
+  let as_users = await ps_users.get(user_id, sessionkey);
+  console.log(as_users);
+  let adminStr = "";
+  if (!isEmpty(as_users)) {
+    if (as_users.is_moderator) adminStr = "<a href='/admin' style='float:right'>Admin</a>\n"
+  }
+
   let template = await fs.readFile("./HTML_templates/navbar.html","utf8");
   console.log("user_id=" + user_id);
   if (user_id == "-1") {
@@ -349,6 +362,7 @@ async function handleNavbar(request, response, user_id) {
     template += "<a href='/logout' id='logout' style='float:right'>Logout</a>\n"
     template += "<a href='/home' style='float:right'>My Profile</a>\n"
     template += "<a href='/upload' style='float:right'>Upload</a>\n"
+    template += adminStr;
   };
 
   deliver(response, "application/xhtml+xml", template);
@@ -463,16 +477,20 @@ async function handleDownload(request, response) {
   filestream.pipe(response);
 };
 
-async function validateKeys(fields) {
-  let ps_uploads = await db.prepare("select * from uploads where name=? and key=?");
-  let as_uploads = await ps_uploads.all(fields.uploadName[0], fields.key[0]);
-  if (as_uploads.length != 1) return -1;
+async function validateKeys(request, fields) {
+  let ps_uploads, as_uploads;
+  if (request.url.includes("/content/")) {
+    ps_uploads = await db.prepare("select * from uploads where name=? and key=?");
+    as_uploads = await ps_uploads.all(fields.uploadName[0], fields.key[0]);
+    if (as_uploads.length != 1) return -1;
+  };
 
   let ps_users = await db.prepare("select * from users where user_id=? and sessionkey=?");
   let as_users = await ps_users.all(fields.user_id[0], fields.sessionkey[0]);
   if (as_users.length != 1) return -1;
 
-  return as_uploads[0].upload_id;
+  if (request.url.includes("/content/")) return as_uploads[0].upload_id;
+  return 1;
 };
 
 // written with help from:
@@ -494,13 +512,19 @@ function getRequestData(request, response, callback, url) {
   }
   else if (request.headers['content-type'].includes(FORM_MULTIPARTY)) {
     // this section handles multipart/form-data post requests.
+
+    console.log("form found");
     let form = new multiparty.Form();
 
     mkdirp.sync(uploadstmp);
     form.uploadDir = uploadstmp;
 
     form.parse(request, async function(err, fields, files) {
-      let valid_id = await validateKeys(fields);
+      console.log("form fields:");
+      console.log(fields);
+      console.log("form files:");
+      console.log(files);
+      let valid_id = await validateKeys(request, fields);
       callback(request, response, files, valid_id);
     });
   }
@@ -618,7 +642,6 @@ function loopAdminForm(ts, users, uploads) {
     user_rows += "<td>" + user.join_date + "</td>\n";
     user_rows += "<td><input type='checkbox' id='modid_" + user.user_id + (user.is_moderator ? "' checked='checked'" : "'") + "></input></td>\n";
     user_rows += "<td><input type='checkbox' id='delusid_" + user.user_id + "'></input></td>\n</tr>\n";
-    console.log(user_rows);
   };
 
   loop_html += user_rows + ts[1];

@@ -1,4 +1,6 @@
-<form>
+
+<form id="adminform">
+  <h2>Users <a onclick="minimise('users')" id="userscaret"><i class="fa fa-caret-up"></i></a></h2>
   <table id="users">
     <th>user_id</th>
     <th>Username</th>
@@ -9,8 +11,9 @@
     $
   </table>
 
-  <br/><br/>
+  <div id="usersbreak"><br/><br/></div>
 
+  <h2>Uploads <a onclick="minimise('uploads')" id="uploadscaret"><i class="fa fa-caret-up"></i></a></h2>
   <table id="uploads">
     <th>uploads_id</th>
     <th>Upload name</th>
@@ -21,7 +24,7 @@
     $
   </table>
 
-  <br/><br/>
+  <div id="uploadsbreak"><br/><br/></div>
 
   <input id="but_admin" type="submit" value="Update"></input>
 </form>

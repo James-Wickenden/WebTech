@@ -20,7 +20,7 @@ async function loadhtml() {
 
   console.log("userid=" + user_id);
   console.log("sessionkey=" + sessionkey);
-  xhttp.send("userid=" + user_id);
+  xhttp.send("userid=" + user_id + "&sessionkey=" + sessionkey);
 };
 
 function receiveNavbar(response) {
