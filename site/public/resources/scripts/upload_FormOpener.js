@@ -8,6 +8,12 @@ function initFormOpener() {
   let user_id = sessionStorage.getItem("user_id");
   if (user_id === null) user_id = -1;
   if (user_id == -1) notLoggedIn();
+
+  let type = window.location.href.split("/").pop();
+  if (type == "map" || type == "config" || type == "model" || type == "other") {
+      document.getElementById('s_cats').value = "o_" + type;
+  };
+  formatCategory();
 }
 
 function formatCategory() {
@@ -28,6 +34,7 @@ function hideAllForms() {
 };
 
 function unhideForm(category) {
+  if (category == "t_default") return;
   document.getElementById(category).setAttribute("style", "display: block;");
   document.getElementById('but_submit').setAttribute("style", "display: block;");
 };

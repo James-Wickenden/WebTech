@@ -75,7 +75,8 @@ async function handle(request, response) {
     if (url.includes("/content/"))  return handleContent(request, response, url);
     if (url.includes("/user/") || url == "/home") url = "/user.html";
 
-    if (url == "/upload") url = "/upload.html";
+    if (url == "/upload" || url == "/upload/map" || url == "/upload/config" || url == "/upload/model" || url == "/upload/other")
+     url = "/upload.html";
     if (url == "/login") url = "/login.html";
     if (url == "/logout") return handleMain(request, response);
     if (url == "/createaccount") url = "/create_account.html";
@@ -489,7 +490,7 @@ async function loopMainContent(category) {
   if (content.length == 0) {
     let file = "HTML_templates/empty_category.html";
     let template = await fs.readFile(file, "utf8");
-    let page = template.replace("$", category.split("_").pop() + "s");
+    let page = template.replace("$", category.split("_").pop());
 
     return page;
   };
