@@ -697,11 +697,16 @@ function deliver(response, type, content) {
 }
 
 // Give a minimal failure response to the browser
-function fail(response, code, text) {
-    let textTypeHeader = { "Content-Type": "text/plain" };
-    response.writeHead(code, textTypeHeader);
-    response.write(text, "utf8");
-    response.end();
+async function fail(response, code, text) {
+  if (text == "URL not found.") {
+    let notfound = await fs.readFile("./HTML_templates/notfound.html","utf8");
+    return deliver(response, types.html, notfound);
+  };
+
+  let textTypeHeader = { "Content-Type": "text/plain" };
+  response.writeHead(code, textTypeHeader);
+  response.write(text, "utf8");
+  response.end();
 }
 
 // The most common standard file extensions are supported, and html is

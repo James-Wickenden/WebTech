@@ -8,11 +8,11 @@ User:
 *  allow users to edit their profile; stop editing of other people's
 *  ensure user sessionkey validation
 
-!_Graphics:
+Graphics:
 *  load screenshots when viewing content/ uploading screenshots
-!  make an SVG site logo
+!_  make an SVG site logo
 *  make an SVG for empty main page categories
-   make an SVG for failed URLs
+*  make an SVG for failed URLs
    animate slide transitions using https://www.w3schools.com/howto/howto_js_slideshow.asp
 *  remove slide arrows for one screenshot case
 
