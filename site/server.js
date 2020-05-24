@@ -486,8 +486,13 @@ async function loopMainContent(category) {
   let ps_user = await db.prepare("select * from users where user_id=?;");
   let content = await ps_subs.all(category);
 
-  if (content.length == 0) return "<em style='color:grey'>Nothing has been uploaded in this category!</em>";
-  // replace this message with an svg graphic
+  if (content.length == 0) {
+    let file = "HTML_templates/empty_category.html";
+    let template = await fs.readFile(file, "utf8");
+    let page = template.replace("$", category.split("_").pop() + "s");
+
+    return page;
+  };
 
   let loop_html = "";
 
