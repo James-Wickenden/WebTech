@@ -365,7 +365,6 @@ async function handleAdmin(request, response, userid, sessionkey) {
   if (isEmpty(is_admin)) return deliver(response, "application/xhtml+xml", deniedHTML);
   if (!is_admin.is_moderator) return deliver(response, "application/xhtml+xml", deniedHTML);
 
-
   let ps_users = await db.prepare("select * from users;");
   let ps_uploads = await db.prepare("select * from uploads;");
   let users = await ps_users.all();
@@ -373,9 +372,9 @@ async function handleAdmin(request, response, userid, sessionkey) {
 
   let file = "./HTML_templates/admin_form.html";
   let template = await fs.readFile(file, "utf8");
-  let ts = template.split("$");
-  return deliver(response, "application/xhtml+xml", template);
+  let page = loopAdminForm(template.split("$"), users, uploads);
 
+  return deliver(response, "application/xhtml+xml", page);
 };
 
 async function handleFavouriting(request, response, contentid, userid, sessionkey) {
@@ -607,6 +606,35 @@ function loopContentImages(content) {
   };
   console.log(scsh_str);
   return scsh_str;
+};
+
+function loopAdminForm(ts, users, uploads) {
+  let loop_html = ts[0];
+
+  let user_rows = "";
+  for (user of users) {
+    user_rows += "<tr>\n<td>" + user.user_id + "</td>\n";
+    user_rows += "<td>" + user.username + "</td>\n";
+    user_rows += "<td>" + user.join_date + "</td>\n";
+    user_rows += "<td><input type='checkbox' id='modid_" + user.user_id + (user.is_moderator ? "' checked='checked'" : "'") + "></input></td>\n";
+    user_rows += "<td><input type='checkbox' id='delusid_" + user.user_id + "'></input></td>\n</tr>\n";
+    console.log(user_rows);
+  };
+
+  loop_html += user_rows + ts[1];
+
+  let upload_rows = "";
+  for (upload of uploads) {
+    upload_rows += "<tr>\n<td>" + upload.upload_id + "</td>\n";
+    upload_rows += "<td>" + upload.name + "</td>\n";
+    upload_rows += "<td>" + upload.upload_date + "</td>\n";
+    upload_rows += "<td><a href='/download/" + upload.upload_id + "'>Download</a></td>\n";
+    upload_rows += "<td><input type='checkbox' id='delupid_" + upload.upload_id + "'></input></td>\n</tr>\n";
+  };
+
+  loop_html += upload_rows + ts[2];
+
+  return loop_html;
 };
 
 function parseCategory(content) {
