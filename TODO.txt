@@ -10,7 +10,7 @@ User:
 
 Graphics:
 *  load screenshots when viewing content/ uploading screenshots
-!_  make an SVG site logo
+*  make an SVG site logo
 *  make an SVG for empty main page categories
 *  make an SVG for failed URLs
    animate slide transitions using https://www.w3schools.com/howto/howto_js_slideshow.asp
@@ -21,13 +21,13 @@ Sever:
 *  html for loops for user page submissions
 *  html for loops for main page content
 *  change navbar to logged in user-centric
-   admin abilities
+!  admin abilities
 *  return the user id when an account is created, and set the session data to use it
 
 Database:
 *  increment download counter on file download
 *  add support for favouriting
-   add comment support
+!  add comment support
 
 Other:
 *  add main page category descriptions
