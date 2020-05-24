@@ -79,6 +79,7 @@ async function handle(request, response) {
      url = "/upload.html";
     if (url == "/login") url = "/login.html";
     if (url == "/logout") return handleMain(request, response);
+    if (url == "/admin") url = "/admin.html";
     if (url == "/createaccount") url = "/create_account.html";
 
     let ok = await checkPath(url);
@@ -216,6 +217,9 @@ async function deliverPOST(request, response, POSTData, url) {
   else if (url == "/post/userpage") {
     return handleUser(request, response, "/user/" + POSTData.userid);
   }
+  else if (url == "/post/adminpage") {
+    return handleAdmin(request, response, POSTData.userid, POSTData.sessionkey);
+  }
   else if (url == "/post/newdesc") {
     return handleProfileUpdate(request, response, POSTData);
   }
@@ -348,6 +352,30 @@ async function handleNavbar(request, response, user_id) {
   };
 
   deliver(response, "application/xhtml+xml", template);
+};
+
+async function handleAdmin(request, response, userid, sessionkey) {
+  console.log("userid=" + userid);
+  console.log("sessionkey=" + sessionkey);
+
+  let ps_admin = await db.prepare("select is_moderator from users where user_id=? and sessionkey=?;");
+  let is_admin = await ps_admin.get(userid, sessionkey);
+
+  let deniedHTML = "You do not have permission to view this page.";
+  if (isEmpty(is_admin)) return deliver(response, "application/xhtml+xml", deniedHTML);
+  if (!is_admin.is_moderator) return deliver(response, "application/xhtml+xml", deniedHTML);
+
+
+  let ps_users = await db.prepare("select * from users;");
+  let ps_uploads = await db.prepare("select * from uploads;");
+  let users = await ps_users.all();
+  let uploads = await ps_uploads.all();
+
+  let file = "./HTML_templates/admin_form.html";
+  let template = await fs.readFile(file, "utf8");
+  let ts = template.split("$");
+  return deliver(response, "application/xhtml+xml", template);
+
 };
 
 async function handleFavouriting(request, response, contentid, userid, sessionkey) {
@@ -488,7 +516,7 @@ async function loopMainContent(category) {
   let content = await ps_subs.all(category);
 
   if (content.length == 0) {
-    let file = "HTML_templates/empty_category.html";
+    let file = "./HTML_templates/empty_category.html";
     let template = await fs.readFile(file, "utf8");
     let page = template.replace("$", category.split("_").pop());
 
@@ -497,7 +525,7 @@ async function loopMainContent(category) {
 
   let loop_html = "";
 
-  let file = "HTML_templates/main_content.html";
+  let file = "./HTML_templates/main_content.html";
   let template = await fs.readFile(file, "utf8");
   let ts = template.split("$");
 
@@ -530,7 +558,7 @@ async function loopUserSubmissions(contents) {
 
   let loop_html = "";
 
-  let file = "HTML_templates/user_submission.html";
+  let file = "./HTML_templates/user_submission.html";
   let template = await fs.readFile(file, "utf8");
   let ts = template.split("$");
 
