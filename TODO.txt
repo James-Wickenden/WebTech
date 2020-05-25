@@ -21,13 +21,13 @@ Sever:
 *  html for loops for user page submissions
 *  html for loops for main page content
 *  change navbar to logged in user-centric
-!  admin abilities
+*  admin abilities
 *  return the user id when an account is created, and set the session data to use it
 
 Database:
 *  increment download counter on file download
 *  add support for favouriting
-!  add comment support
+!_ add comment support
 
 Other:
 *  add main page category descriptions

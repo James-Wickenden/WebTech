@@ -113,7 +113,7 @@ async function tryAddNewAccount(POSTData) {
     let ps_keycheck = await db.prepare("select * from users where sessionkey=?;");
     let sessionkey = await generateNewKey(ps_keycheck);
 
-    let ps_add = await db.prepare("insert into users values (?, ?, ?, false, ?, '', ?, '', '');");
+    let ps_add = await db.prepare("insert into users values (?, ?, ?, false, ?, '', ?, '');");
     let res = await ps_add.run(undefined, POSTData.name, POSTData.pass, getToday(), sessionkey);
 
     return "1&id=" + res.lastID + "&sessionkey=" + sessionkey;

@@ -3,6 +3,7 @@
 del db.sqlite
 node create_db_user.js
 node create_db_upload.js
+node create_db_comment.js
 
 rd /s/q public\uploads 2>nul
 rd /s/q public\uploadstmp 2>nul
