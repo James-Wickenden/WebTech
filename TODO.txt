@@ -37,7 +37,7 @@ Other:
 _  search bar
    tags!
    add more example users and uploads
-_  name address bar with current page
+*  name address bar with current page
 *  random page generation
 *  switch content folder saving to use ids
 *  remove tmp variable in uploading

@@ -268,7 +268,7 @@ async function handleContent(request, response, url) {
 
   let commentData = await loopContentComments(content);
   let i = 0;
-  let page = ts[i] + content.name + ts[++i] + parseCategory(content) + ts[++i] + content.upload_id + ts[++i];
+  let page = ts[i] + content.name + ts[++i] + content.name + ts[++i] + parseCategory(content) + ts[++i] + content.upload_id + ts[++i];
   page += user.user_id + ts[++i] + user.username + ts[++i];
   page += loopContentImages(content) + ts[++i];
   page += content.no_downloads + ts[++i] + content.no_favourites + ts[++i] + content.upload_id + ts[++i];
@@ -289,25 +289,25 @@ async function handleMain(request, response) {
   let page = ts[i];
   switch (request.url) {
     default:         {
-      page += "class='active'" + ts[++i] + ts[++i] + ts[++i] + ts[++i];
+      page += "Home" + ts[++i] + "class='active'" + ts[++i] + ts[++i] + ts[++i] + ts[++i];
       page += "This section contains user-created maps." + ts[++i];
       page += await loopMainContent("o_map") + ts[++i];
       break;
     }
     case "/configs": {
-      page += ts[++i] + "class='active'" + ts[++i] + ts[++i] + ts[++i];
+      page += "Configs" + ts[++i] +ts[++i] + "class='active'" + ts[++i] + ts[++i] + ts[++i];
       page += "This section contains custom command configs." + ts[++i];
       page += await loopMainContent("o_config") + ts[++i];
       break;
     }
     case "/models":  {
-      page += ts[++i] + ts[++i] + "class='active'" + ts[++i] + ts[++i];
+      page += "Models" + ts[++i] +ts[++i] + ts[++i] + "class='active'" + ts[++i] + ts[++i];
       page += "This section contains custom models for use in-game." + ts[++i];
       page += await loopMainContent("o_model") + ts[++i];
       break;
     }
     case "/other":   {
-      page += ts[++i] + ts[++i] + ts[++i] + "class='active'" + ts[++i];
+      page += "Other" + ts[++i] + ts[++i] + ts[++i] + ts[++i] + "class='active'" + ts[++i];
       page += "This section contains other user-created content with specified custom categories." + ts[++i];
       page += await loopMainContent("o_other") + ts[++i];
       break;
