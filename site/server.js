@@ -44,7 +44,7 @@ async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
-  let as = await db.all("select * from users");
+  let as = await db.all("select * from comments");
   console.log(as);
 
   await fs.access(root);
@@ -263,13 +263,14 @@ async function handleContent(request, response, url) {
   if (isEmpty(template)) return fail(response, Error, "Content file not found.");
   let ts = template.split("$");
 
+  let commentData = await loopContentComments(content);
   let i = 0;
   let page = ts[i] + content.name + ts[++i] + parseCategory(content) + ts[++i] + content.upload_id + ts[++i];
   page += user.user_id + ts[++i] + user.username + ts[++i];
   page += loopContentImages(content) + ts[++i];
   page += content.no_downloads + ts[++i] + content.no_favourites + ts[++i] + content.upload_id + ts[++i];
   page += content.description + ts[++i] + content.upload_date + ts[++i];
-  page += content.comments.length + ts[++i] + content.comments + ts[++i];
+  page += commentData[1] + ts[++i] + commentData[0] + ts[++i];
 
   deliver(response, "application/xhtml+xml", page);
 };
@@ -345,7 +346,7 @@ async function handleUser(request, response, url) {
 async function handleNavbar(request, response, user_id, sessionkey) {
   let ps_users = await db.prepare("select * from users where user_id=? and sessionkey=?");
   let as_users = await ps_users.get(user_id, sessionkey);
-  console.log(as_users);
+
   let adminStr = "";
   if (!isEmpty(as_users)) {
     if (as_users.is_moderator) adminStr = "<a href='/admin' style='float:right'>Admin</a>\n"
@@ -437,6 +438,7 @@ async function handleFavouriting(request, response, contentid, userid, sessionke
   try {
     let ps_get_fav = await db.prepare("select favourites from users where user_id=? and sessionkey=?;");
     let user_favourites = await ps_get_fav.get(parseInt(userid),parseInt(sessionkey));
+    if (isEmpty(user_favourites)) return deliver(response, "application/xhtml+xml", "false|get");
 
     if (url == "/post/getfav") {
       if (user_favourites.favourites != "") {
@@ -663,6 +665,27 @@ function loopContentImages(content) {
   };
   console.log(scsh_str);
   return scsh_str;
+};
+
+async function loopContentComments(content) {
+  let ps_get_comments = await db.prepare("select * from comments where upload_id=?;");
+  let comments = await ps_get_comments.all(content.upload_id);
+
+  if (comments.length == 0) return ["", 0];
+
+  let commentStr = "";
+  let commentCount = 0;
+  for (comment of comments) {
+    let ps_username = await db.prepare("select username from users where user_id=?;");
+    let user = await ps_username.get(comment.user_id);
+
+    commentStr += "<p id='username'><a href='/user/" + comment.user_id + "'>" + user.username + "</a> &#160;&#160;";
+    commentStr += comment.comment_date + "</p>\n";
+    commentStr += "<p id='comment'>" + comment.comment_text + "</p>\n";
+    commentCount++;
+  };
+
+  return [commentStr, commentCount];
 };
 
 function loopAdminForm(ts, users, uploads) {
