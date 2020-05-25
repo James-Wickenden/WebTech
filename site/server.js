@@ -417,10 +417,12 @@ async function handleAdminUpdate(request, response, POSTData) {
     };
 
     let ps_del_up = await db.prepare("delete from uploads where upload_id=?;");
-    for (upload_id of deleteUploads) {
-      if (upload_id == '') break;
-      console.log("upload_id=" + (parseInt(upload_id) + 1));
-      await ps_del_up.run(parseInt(upload_id) + 1);
+    for (delupid of deleteUploads) {
+      if (delupid == '') break;
+      let upload_id = parseInt(delupid) + 1;
+      console.log("upload_id=" + upload_id);
+      await ps_del_up.run(upload_id);
+      rimraf.sync( process.cwd() + "\\public\\uploads\\" + upload_id);
     }
   }
   catch(err) { console.log(err); return deliver(response, "application/xhtml+xml", "failure"); };

@@ -33,8 +33,7 @@ function getFormData() {
 
   let maxuserid = parseInt(document.getElementById('maxuserid').innerHTML);
   for (let i = 0; i <= maxuserid; i++) {
-    if (users[i] === undefined) break;
-    console.log("reading user " + i);
+    if (users[i] === undefined) continue;
     let is_moderator = document.getElementById('modid_' + (i + 1)).checked;
     let is_to_delete = document.getElementById('delusid_' + (i + 1)).checked;
     if (is_moderator) modusStr += i + "|";
@@ -43,8 +42,7 @@ function getFormData() {
 
   let maxuploadid = parseInt(document.getElementById('maxuploadid').innerHTML);
   for (let i = 0; i <= maxuploadid; i++) {
-    if (uploads[i] === undefined) break;
-    console.log("reading upload " + i);
+    if (document.getElementById('delupid_' + (i + 1)) === null) continue;
     let is_to_delete = document.getElementById('delupid_' + (i + 1)).checked;
     if (is_to_delete) delupStr += i + "|";
   };
