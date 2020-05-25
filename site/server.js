@@ -479,18 +479,16 @@ async function handleDownload(request, response) {
 
 async function validateKeys(request, fields) {
   let ps_uploads, as_uploads;
-  if (request.url.includes("/content/")) {
-    ps_uploads = await db.prepare("select * from uploads where name=? and key=?");
-    as_uploads = await ps_uploads.all(fields.uploadName[0], fields.key[0]);
-    if (as_uploads.length != 1) return -1;
-  };
+
+  ps_uploads = await db.prepare("select * from uploads where name=? and key=?");
+  as_uploads = await ps_uploads.all(fields.uploadName[0], fields.key[0]);
+  if (as_uploads.length != 1) return -1;
 
   let ps_users = await db.prepare("select * from users where user_id=? and sessionkey=?");
   let as_users = await ps_users.all(fields.user_id[0], fields.sessionkey[0]);
   if (as_users.length != 1) return -1;
 
-  if (request.url.includes("/content/")) return as_uploads[0].upload_id;
-  return 1;
+  return as_uploads[0].upload_id;
 };
 
 // written with help from:
@@ -520,10 +518,6 @@ function getRequestData(request, response, callback, url) {
     form.uploadDir = uploadstmp;
 
     form.parse(request, async function(err, fields, files) {
-      console.log("form fields:");
-      console.log(fields);
-      console.log("form files:");
-      console.log(files);
       let valid_id = await validateKeys(request, fields);
       callback(request, response, files, valid_id);
     });
@@ -634,29 +628,35 @@ function loopContentImages(content) {
 
 function loopAdminForm(ts, users, uploads) {
   let loop_html = ts[0];
+  let maxuserid = 0, maxuploadid = 0;
 
   let user_rows = "";
   for (user of users) {
-    user_rows += "<tr>\n<td>" + user.user_id + "</td>\n";
+    user_rows += "<tr class='user'>\n<td>" + user.user_id + "</td>\n";
     user_rows += "<td>" + user.username + "</td>\n";
     user_rows += "<td>" + user.join_date + "</td>\n";
     user_rows += "<td><input type='checkbox' id='modid_" + user.user_id + (user.is_moderator ? "' checked='checked'" : "'") + "></input></td>\n";
     user_rows += "<td><input type='checkbox' id='delusid_" + user.user_id + "'></input></td>\n</tr>\n";
+
+    if (user.user_id > maxuserid) maxuserid = user.user_id;
   };
 
   loop_html += user_rows + ts[1];
 
   let upload_rows = "";
   for (upload of uploads) {
-    upload_rows += "<tr>\n<td>" + upload.upload_id + "</td>\n";
+    upload_rows += "<tr class='upload'>\n<td>" + upload.upload_id + "</td>\n";
     upload_rows += "<td>" + upload.name + "</td>\n";
     upload_rows += "<td>" + upload.upload_date + "</td>\n";
     upload_rows += "<td><a href='/download/" + upload.upload_id + "'>Download</a></td>\n";
     upload_rows += "<td><input type='checkbox' id='delupid_" + upload.upload_id + "'></input></td>\n</tr>\n";
+
+    if (upload.upload_id > maxuploadid) maxuploadid = upload.upload_id;
   };
 
   loop_html += upload_rows + ts[2];
-
+  loop_html += maxuserid   + ts[3];
+  loop_html += maxuploadid + ts[4];
   return loop_html;
 };
 

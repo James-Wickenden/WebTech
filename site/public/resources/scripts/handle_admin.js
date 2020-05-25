@@ -25,25 +25,42 @@ function receiveForm(response) {
   document.getElementById('but_admin').addEventListener("click", submitChanges);
 };
 
+function getFormData() {
+  let modusStr = "", delupStr = "", delusStr = "";
+  let users = document.getElementsByClassName('user');
+  let uploads = document.getElementsByClassName('upload');
+
+  let maxuserid = parseInt(document.getElementById('maxuserid').innerHTML);
+  for (let i = 0; i <= maxuserid; i++) {
+    if (users[i] === undefined) break;
+    let is_moderator = document.getElementById('modid_' + (i + 1)).checked;
+    let is_to_delete = document.getElementById('delusid_' + (i + 1)).checked;
+    if (is_moderator) modusStr += i + "|";
+    if (is_to_delete) delusStr += i + "|";
+  };
+
+  let maxuploadid = parseInt(document.getElementById('maxuploadid').innerHTML);
+  for (let i = 0; i <= maxuploadid; i++) {
+    if (uploads[i] === undefined) break;
+    let is_to_delete = document.getElementById('delupid_' + (i + 1)).checked;
+    if (is_to_delete) delupStr += i + "|";
+  };
+
+  return "&modus=" + modusStr + "&delus=" + delusStr + "&delup=" + delupStr;
+}
+
 function submitChanges(event) {
   event.preventDefault();
 
-  let formData = new FormData(document.getElementById('adminform'));
+  let formData = "";
   let user_id = sessionStorage.getItem("user_id");
-  formData.append("user_id", user_id);
   let sessionkey = sessionStorage.getItem("sessionkey");
-  formData.append("sessionkey", sessionkey);
+  formData += "user_id=" + user_id;
+  formData += "&sessionkey=" + sessionkey;
+  formData += getFormData();
 
-  console.log(formData);
 
-  var xhttp_data = new XMLHttpRequest();
-  xhttp_data.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-      receiveChanges(this);
-    }
-  };
-  xhttp_data.open("POST", "/post/admin/update", true);
-  xhttp_data.send(formData);
+  
 };
 
 function receiveChanges(response) {
