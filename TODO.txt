@@ -34,12 +34,10 @@ Other:
 *  add support for generic screenshots/ make screenshots not mandatory
 *  refactor file_submitted.js
    comment javascript methods
-_  search bar
-   tags!
    add more example users and uploads
 *  name address bar with current page
 *  random page generation
 *  switch content folder saving to use ids
 *  remove tmp variable in uploading
 *  prevent non-logged in users from uploading
-* fix the content categories discrepancy!
+*  fix the content categories discrepancy!
