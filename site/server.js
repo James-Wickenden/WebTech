@@ -44,7 +44,7 @@ async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
-  let as = await db.all("select * from comments");
+  let as = await db.all("select * from users");
   console.log(as);
 
   await fs.access(root);
@@ -113,7 +113,7 @@ async function tryAddNewAccount(POSTData) {
     let ps_keycheck = await db.prepare("select * from users where sessionkey=?;");
     let sessionkey = await generateNewKey(ps_keycheck);
 
-    let ps_add = await db.prepare("insert into users values (?, ?, ?, false, ?, '', ?, '');");
+    let ps_add = await db.prepare("insert into users values (?, ?, ?, false, ?, '', ?, '', '');");
     let res = await ps_add.run(undefined, POSTData.name, POSTData.pass, getToday(), sessionkey);
 
     return "1&id=" + res.lastID + "&sessionkey=" + sessionkey;
@@ -224,6 +224,9 @@ async function deliverPOST(request, response, POSTData, url) {
   }
   else if (url == "/post/newdesc") {
     return handleProfileUpdate(request, response, POSTData);
+  }
+  else if (url == "/post/comment") {
+    return handleComment(request, response, POSTData);
   }
   else if (url == "/post/navbar") {
     return handleNavbar(request, response, POSTData.userid, POSTData.sessionkey);
@@ -494,6 +497,17 @@ async function handleProfileUpdate(request, response, POSTData) {
   let res = await ps_update.run(newdesc, user_id, sessionkey);
   if (res.changes != 1) return deliver(response, "application/xhtml+xml", "fail");
   deliver(response, "application/xhtml+xml", "success");
+};
+
+async function handleComment(request, response, POSTData) {
+  console.log(POSTData);
+  let ps_finduser = await db.prepare("select * from users where user_id=? and sessionkey=?;");
+  let user = await ps_finduser.get(POSTData.userid, POSTData.sessionkey);
+  if (isEmpty(user) || POSTData.comment == '' || POSTData.comment.length > 1024) return deliver(response, "application/xhtml+xml", "failure");
+
+  let ps_addcomment = await db.prepare("insert into comments values (?, ?, ?, ?, ?);");
+  await ps_addcomment.run(undefined, POSTData.upload_id, POSTData.userid, POSTData.comment, getToday());
+  return deliver(response, "application/xhtml+xml", "success");
 };
 
 async function handleDownload(request, response) {

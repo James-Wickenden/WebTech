@@ -27,17 +27,17 @@ Sever:
 Database:
 *  increment download counter on file download
 *  add support for favouriting
-!_ add comment support
+*  add comment support
 
 Other:
 *  add main page category descriptions
 *  add support for generic screenshots/ make screenshots not mandatory
 *  refactor file_submitted.js
    comment javascript methods
-   search bar
+_  search bar
    tags!
    add more example users and uploads
-   name address bar with current page
+_  name address bar with current page
 *  random page generation
 *  switch content folder saving to use ids
 *  remove tmp variable in uploading

@@ -14,6 +14,7 @@
   <script src="/resources/scripts/insert_navbar.js" defer="defer"></script>
   <script src="/resources/scripts/handle_favourites.js" defer="defer"></script>
   <script src="/resources/scripts/handle_slideshow.js" defer="defer"></script>
+  <script src="/resources/scripts/comment_submitted.js" defer="defer"></script>
 </head>
 
 <body>
@@ -61,11 +62,11 @@
       <div class="border"></div>
       <br/>
 
-      <form action="#">
+      <form id="commentform" action="#">
         <textarea rows="4" cols="50" id="add_comment" placeholder="You must be logged in to comment."/><br/>
         <input type="submit" value="Submit"></input>
       </form>
-
+      <p id="comment_status" style="color:red"></p>
       <br/><br/>
       <p style="text-align: center"><a href=""><i class="fa fa-arrow-up"></i></a></p>
     </div>
