@@ -152,7 +152,6 @@ async function tryFileUpload_Form(POSTData, url) {
   if (isEmpty(POSTData.file)) return -1;
   if (POSTData.cate == "o_other" && isEmpty(POSTData.cats)) return -1;
   if (POSTData.desc.length >= 1024) return -1;
-
   //if (isEmpty(POSTData.tags)) return -1;
 
   let ps = await db.prepare("select * from users where user_id=? and sessionkey=?;");
@@ -218,11 +217,10 @@ async function deliverPOST(request, response, POSTData, url) {
     return handleUser(request, response, "/user/" + POSTData.userid);
   }
   else if (url == "/post/admin/page") {
-    return handleAdmin(request, response, POSTData.userid, POSTData.sessionkey);
+    return handleAdminPage(request, response, POSTData.userid, POSTData.sessionkey);
   }
   else if (url == "/post/admin/update") {
-    console.log(POSTData);
-    //return handleAdmin(request, response, POSTData);
+    return handleAdminUpdate(request, response, POSTData);
   }
   else if (url == "/post/newdesc") {
     return handleProfileUpdate(request, response, POSTData);
@@ -368,7 +366,7 @@ async function handleNavbar(request, response, user_id, sessionkey) {
   deliver(response, "application/xhtml+xml", template);
 };
 
-async function handleAdmin(request, response, userid, sessionkey) {
+async function handleAdminPage(request, response, userid, sessionkey) {
   console.log("userid=" + userid);
   console.log("sessionkey=" + sessionkey);
 
@@ -389,6 +387,45 @@ async function handleAdmin(request, response, userid, sessionkey) {
   let page = loopAdminForm(template.split("$"), users, uploads);
 
   return deliver(response, "application/xhtml+xml", page);
+};
+
+async function handleAdminUpdate(request, response, POSTData) {
+  let ps_admin = await db.prepare("select is_moderator from users where user_id=? and sessionkey=?;");
+  let is_admin = await ps_admin.get(POSTData.userid, POSTData.sessionkey);
+
+  console.log(POSTData);
+  let deniedHTML = "You do not have permission to edit this form.";
+  if (isEmpty(is_admin)) return deliver(response, "application/xhtml+xml", deniedHTML);
+  if (!is_admin.is_moderator) return deliver(response, "application/xhtml+xml", deniedHTML);
+
+  try {
+    let updatedMods = [''], deleteUsers = [''], deleteUploads = [''];
+    if (!isEmpty(POSTData.modus)) updatedMods   = POSTData.modus.split("|");
+    if (!isEmpty(POSTData.delus)) deleteUsers   = POSTData.delus.split("|");
+    if (!isEmpty(POSTData.delup)) deleteUploads = POSTData.delup.split("|");
+
+    let ps_mod = await db.prepare("update users set is_moderator=? where user_id=?;");
+    let ps_del_us = await db.prepare("delete from users where user_id=?;");
+    let users = await db.all("select * from users");
+    for (user of users) {
+      if (isEmpty(user)) break;
+      let is_user_mod = updatedMods.includes((user.user_id - 1).toString());
+      await ps_mod.run(is_user_mod, user.user_id);
+
+      let is_delete_user = deleteUsers.includes((user.user_id - 1).toString());
+      if (is_delete_user) await ps_del_us.run(user.user_id);
+    };
+
+    let ps_del_up = await db.prepare("delete from uploads where upload_id=?;");
+    for (upload_id of deleteUploads) {
+      if (upload_id == '') break;
+      console.log("upload_id=" + (parseInt(upload_id) + 1));
+      await ps_del_up.run(parseInt(upload_id) + 1);
+    }
+  }
+  catch(err) { console.log(err); return deliver(response, "application/xhtml+xml", "failure"); };
+
+  return deliver(response, "application/xhtml+xml", "success");
 };
 
 async function handleFavouriting(request, response, contentid, userid, sessionkey) {

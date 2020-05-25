@@ -22,6 +22,7 @@ async function loadAdminPage() {
 function receiveForm(response) {
   let adminpage = document.getElementById('adminpage');
   adminpage.innerHTML = response.responseText;
+  if (response.responseText.length == 45) return;
   document.getElementById('but_admin').addEventListener("click", submitChanges);
 };
 
@@ -33,6 +34,7 @@ function getFormData() {
   let maxuserid = parseInt(document.getElementById('maxuserid').innerHTML);
   for (let i = 0; i <= maxuserid; i++) {
     if (users[i] === undefined) break;
+    console.log("reading user " + i);
     let is_moderator = document.getElementById('modid_' + (i + 1)).checked;
     let is_to_delete = document.getElementById('delusid_' + (i + 1)).checked;
     if (is_moderator) modusStr += i + "|";
@@ -42,6 +44,7 @@ function getFormData() {
   let maxuploadid = parseInt(document.getElementById('maxuploadid').innerHTML);
   for (let i = 0; i <= maxuploadid; i++) {
     if (uploads[i] === undefined) break;
+    console.log("reading upload " + i);
     let is_to_delete = document.getElementById('delupid_' + (i + 1)).checked;
     if (is_to_delete) delupStr += i + "|";
   };
@@ -55,22 +58,29 @@ function submitChanges(event) {
   let formData = "";
   let user_id = sessionStorage.getItem("user_id");
   let sessionkey = sessionStorage.getItem("sessionkey");
-  formData += "user_id=" + user_id;
+  formData += "userid=" + user_id;
   formData += "&sessionkey=" + sessionkey;
   formData += getFormData();
 
-
-  
+  var xhttp_form = new XMLHttpRequest();
+  xhttp_form.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      receiveChanges(this);
+    }
+  };
+  xhttp_form.open("POST", "/post/admin/update", true);
+  xhttp_form.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  xhttp_form.send(formData);
 };
 
 function receiveChanges(response) {
-  console.log(response.responseText);
+  if (response.responseText == "success") location.reload();
 };
 
 function minimise(tableid) {
   let table = document.getElementById(tableid);
   if (table.style.display == "none") {
-    table.style.display = "block";
+    table.style.display = "";
     document.getElementById(tableid + "caret").innerHTML = "<i class='fa fa-caret-up'></i>";
     document.getElementById(tableid + "break").innerHTML = "<br/><br/>";
   }
