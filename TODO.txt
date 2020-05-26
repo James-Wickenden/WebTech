@@ -13,7 +13,7 @@ Graphics:
 *  make an SVG site logo
 *  make an SVG for empty main page categories
 *  make an SVG for failed URLs
-   animate slide transitions using https://www.w3schools.com/howto/howto_js_slideshow.asp
+*  animate slide transitions
 *  remove slide arrows for one screenshot case
 
 Sever:
@@ -33,8 +33,8 @@ Other:
 *  add main page category descriptions
 *  add support for generic screenshots/ make screenshots not mandatory
 *  refactor file_submitted.js
-   comment javascript methods
-   add more example users and uploads
+_  comment javascript methods
+_  add more example users and uploads
 *  name address bar with current page
 *  random page generation
 *  switch content folder saving to use ids

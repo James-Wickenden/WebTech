@@ -674,7 +674,7 @@ function loopContentImages(content) {
   for (scsh of screenshots) {
     let ext = scsh.split(".")[1];
     if (scsh != '' && (ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "gif")) {
-      scsh_str += "<img src='/uploads/" + content.upload_id + "/" + scsh + "' class='slide' type='image' height='500px'></img>\n";
+      scsh_str += "<img src='/uploads/" + content.upload_id + "/" + scsh + "' class='slide fade' type='image' height='500px'></img>\n";
     };
   };
   console.log(scsh_str);
