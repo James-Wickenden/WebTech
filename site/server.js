@@ -711,8 +711,14 @@ function loopAdminForm(ts, users, uploads) {
     user_rows += "<tr class='user'>\n<td>" + user.user_id + "</td>\n";
     user_rows += "<td>" + user.username + "</td>\n";
     user_rows += "<td>" + user.join_date + "</td>\n";
-    user_rows += "<td><input type='checkbox' id='modid_" + user.user_id + (user.is_moderator ? "' checked='checked'" : "'") + "></input></td>\n";
-    user_rows += "<td><input type='checkbox' id='delusid_" + user.user_id + "'></input></td>\n</tr>\n";
+    let tags_mod =  "id='modid_" + user.user_id + "'";
+    if (user.is_moderator) tags_mod += " checked='checked' ";
+    if (user.user_id == 1) tags_mod += " disabled='diasbled' ";
+    user_rows += "<td><input type='checkbox' " + tags_mod + "></input></td>\n";
+
+    let tags_del =  "id='delusid_" + user.user_id + "'";
+    if (user.user_id == 1) tags_del += " disabled='diasbled' ";
+    user_rows += "<td><input type='checkbox' " + tags_del + "></input></td>\n</tr>\n";
 
     if (user.user_id > maxuserid) maxuserid = user.user_id;
   };

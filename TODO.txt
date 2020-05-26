@@ -15,6 +15,7 @@ Graphics:
 *  make an SVG for failed URLs
 *  animate slide transitions
 *  remove slide arrows for one screenshot case
+*  prevent deleting the master-admin
 
 Sever:
 *  store user data when navigating the site
