@@ -20,14 +20,6 @@ function initHandler() {
 async function submitForm(event) {
   event.preventDefault();
 
-  if (!allFieldsFilled()) {
-    updateStatusLabel(false, "One or more required fields are missing.")
-    return;
-  };
-
-  console.log("Submitting file submission to server for validation...")
-  updateStatusLabel(false, "")
-
   let cat_ext = form["s_cats"].value.split("_").pop();
   currentFormFields = {};
 
@@ -38,6 +30,14 @@ async function submitForm(event) {
   currentFormFields.other_cat = form["s_cats_other"].value;
   currentFormFields.scsh_files = parseMultipleFileNames(form["s_scsh_" + cat_ext]);
   console.log(currentFormFields);
+
+  if (!allFieldsFilled()) {
+    updateStatusLabel(false, "One or more required fields are missing.")
+    return;
+  };
+
+  console.log("Submitting file submission to server for validation...")
+  updateStatusLabel(false, "")
 
   requestFileSubmission();
 };
