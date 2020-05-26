@@ -4,6 +4,7 @@ addEventListener('load', loadHomeSession);
 var user_id, sessionkey;
 var desc_editor, cur_desc;
 
+// Sends a request to the server for user page data.
 async function loadHomeSession() {
   user_id = parseInt(window.location.pathname.split("/").pop());
   if (window.location.pathname == "/home"){
@@ -28,6 +29,7 @@ async function receiveHome(response) {
   formatDesc(user_id);
 };
 
+// Handles submitting a new personal description
 function formatDesc() {
   if (user_id === null || user_id == "-1") return;
   if (user_id != sessionStorage.getItem("user_id")) return;
@@ -41,6 +43,7 @@ function formatDesc() {
   desc_editor.addEventListener('submit', submitNewDesc);
 };
 
+// Toggles the form for updating the user description.
 function toggleDesc(event) {
   event.preventDefault();
 

@@ -3,6 +3,8 @@
 addEventListener('load', commentHandler);
 var form;
 var comment_status;
+
+// Initialises handling once the page is loaded
 function commentHandler() {
   form = document.getElementById("commentform");
   comment_status = document.getElementById("comment_status");
@@ -11,6 +13,7 @@ function commentHandler() {
   form.addEventListener('submit', handleCommentForm);
 };
 
+// Runs when a new comment is submitted
 function submitCommentForm(event) {
   event.preventDefault();
 

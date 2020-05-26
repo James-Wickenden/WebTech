@@ -6,6 +6,7 @@ var user_id;
 
 addEventListener('load', loadContentUserStats);
 
+// Asks the server if the user has favourited this upload when the page is loaded.
 async function loadContentUserStats() {
   document.getElementById("heart_link").addEventListener("click", clickFavourite);
   document.getElementById("down_link").addEventListener("click", clickDownload);
@@ -29,6 +30,7 @@ async function loadContentUserStats() {
   xhttp.send("contentid=" + contentid + "&userid=" + user_id + "&sessionkey=" + sessionkey);
 };
 
+// Updates the favourite colour and counter as it is changed.
 function setFav(response) {
   console.log(response.responseText);
   let is_favourited = (response.responseText.split("|")[0] == "true");
@@ -42,6 +44,7 @@ function setFav(response) {
   else document.getElementById("hearted").style = "color:grey";
 };
 
+// Sets the new favourite counter status, and updates it on the page.
 function clickFavourite(event) {
   event.preventDefault();
   console.log("Clicked favourite");
@@ -57,6 +60,7 @@ function clickFavourite(event) {
   xhttp.send("contentid=" + contentid + "&userid=" + user_id + "&sessionkey=" + sessionkey);
 };
 
+// Updates the download counter to increment.
 function clickDownload(event) {
   let curval = parseInt(document.getElementById("d_saved").innerHTML);
   document.getElementById("d_saved").innerHTML = curval + 1;

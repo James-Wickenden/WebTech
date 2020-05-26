@@ -4,6 +4,7 @@ let sourceFile = "/navbar.html";
 
 addEventListener('load', loadhtml);
 
+// Once the page is loaded, makes a request to the server for the dynamic navbar.
 async function loadhtml() {
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
@@ -23,6 +24,7 @@ async function loadhtml() {
   xhttp.send("userid=" + user_id + "&sessionkey=" + sessionkey);
 };
 
+// Inserts the navbar html and adds a handler for logout.
 function receiveNavbar(response) {
   document.getElementById('navbar-div').innerHTML = "<div class='navbar'>" + response.responseText + "</div>";
   if (document.getElementById('logout') !== null) {

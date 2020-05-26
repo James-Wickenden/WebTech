@@ -5,6 +5,10 @@ addEventListener('load', loadSlideController);
 var slides;
 var cur_slide = 0;
 
+// This script clicks through images uploaded with content.
+// Special cases for 0 images: no images are shown.
+// 1 image: no scrolling arrows are shown at the sides.
+
 async function loadSlideController() {
   let rightslide = document.getElementById('rightslide');
   let leftslide  = document.getElementById('leftslide');

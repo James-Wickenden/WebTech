@@ -18,6 +18,7 @@ function initHandler() {
   form.addEventListener('submit', handleForm);
 };
 
+// When submit button is clicked, validates form clientside and sends a request to the server.
 async function addNewUser(event) {
   event.preventDefault();
 
@@ -51,6 +52,8 @@ async function addNewUser(event) {
   requestNewAccount(form['l_username'].value, form['l_password_1'].value);
 };
 
+// Updates the status label to provide feedback to the user.
+// On successful account creation, redirect to the user's homepage.
 function handleStatusLabel(status) {
   switch (parseInt(status[0])) {
     case statusMode.SUCCESS: {
@@ -90,6 +93,7 @@ function handleStatusLabel(status) {
   };
 };
 
+// Handles updating the status label.
 function updateStatusLabel(success, message) {
   let l_status = document.getElementById('l_status');
 
@@ -98,8 +102,8 @@ function updateStatusLabel(success, message) {
   l_status.innerHTML = message;
 }
 
+// Submits a XMLHttpRequest for a new account.
 async function requestNewAccount(username, password) {
-
   var xhttp = new XMLHttpRequest();
   xhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
@@ -113,6 +117,8 @@ async function requestNewAccount(username, password) {
   updateStatusLabel(false, "");
 };
 
+// Submits the password in plaintext.
+// Salting and hashing was not done due to time constraints but would require no changes to server/database structure
 function getParams(username, password) {
   let res = "name=";
   res += username;

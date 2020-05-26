@@ -4,17 +4,29 @@ addEventListener('load', initHandler);
 
 var currentFormFields;
 var form;
+
+// This is a script that handles clientside validation of an upload form, then submitting the form fields.
+// If successful, a key is returned and it is used to submit the file data- the file and any screenshots.
+// Serverside validation is also done as with any submission on the site.
+
 function initHandler() {
   form = document.getElementById("upload_form");
   function handleForm(event) { submitForm(event); };
   form.addEventListener('submit', handleForm);
 };
 
+// Sets up the currentFormFields object which contains all the selected fields for that category.
+// Then validates the fields and requests a submission.
 async function submitForm(event) {
   event.preventDefault();
 
-  let status = 0;
-  let l_status = document.getElementById('l_status');
+  if (!allFieldsFilled()) {
+    updateStatusLabel(false, "One or more required fields are missing.")
+    return;
+  };
+
+  console.log("Submitting file submission to server for validation...")
+  updateStatusLabel(false, "")
 
   let cat_ext = form["s_cats"].value.split("_").pop();
   currentFormFields = {};
@@ -27,17 +39,10 @@ async function submitForm(event) {
   currentFormFields.scsh_files = parseMultipleFileNames(form["s_scsh_" + cat_ext]);
   console.log(currentFormFields);
 
-  if (!allFieldsFilled()) {
-    updateStatusLabel(false, "One or more required fields are missing.")
-    return;
-  };
-
-  console.log("Submitting file submission to server for validation...")
-  updateStatusLabel(false, "")
-
   requestFileSubmission();
 };
 
+// Updates the status label for user feedback
 function updateStatusLabel(success, message) {
   let l_status = document.getElementById('l_status');
   if (success == true)  l_status.setAttribute("style", "color: green;");
@@ -45,6 +50,7 @@ function updateStatusLabel(success, message) {
   l_status.innerHTML = message;
 }
 
+// Requests a submission of the current form.
 async function requestFileSubmission() {
   var xhttp_form = new XMLHttpRequest();
   xhttp_form.onreadystatechange = function() {
@@ -59,6 +65,7 @@ async function requestFileSubmission() {
   updateStatusLabel(false, "");
 };
 
+// Writes the parameters to the POST request string.
 function getParams() {
   let res = "user_id=";
   res += sessionStorage.getItem("user_id");
@@ -70,6 +77,7 @@ function getParams() {
   return res;
 }
 
+// Writes the files to a FormData object once the request is approved.
 function getFormData(key) {
   let formData = new FormData();
   let file;
@@ -103,6 +111,7 @@ function getFormData(key) {
   return formData;
 };
 
+// Receives the server response to the upload request.
 async function receiveForm(response) {
   //console.log(response);
   console.log(response.responseText);
@@ -117,6 +126,8 @@ async function receiveForm(response) {
   };
 };
 
+// Receives the server response to the upload.
+// On success, redirects to the newly uploaded page.
 async function receiveData(response) {
   if (response.responseText == -1) {
     console.log("Upload not successful.");
@@ -130,6 +141,7 @@ async function receiveData(response) {
   };
 };
 
+// Sends the formData with the upload key to the server.
 async function sendFormData(key) {
   let form = document.getElementById("upload_form");
   //console.log(key);
@@ -157,6 +169,7 @@ function getSpecificParams() {
   return res;
 };
 
+// Parses the uploaded screenshot filenames into a single string with | delimiters.
 function parseMultipleFileNames(scsh) {
   let res = "";
   let name = "";
@@ -168,6 +181,7 @@ function parseMultipleFileNames(scsh) {
   return res;
 };
 
+// Validates the required fields are filled.
 function allFieldsFilled() {
   if (!(sessionStorage.getItem("user_id") > 0)) return false;
 

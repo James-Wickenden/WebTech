@@ -26,6 +26,8 @@ function receiveForm(response) {
   document.getElementById('but_admin').addEventListener("click", submitChanges);
 };
 
+// Iterates through the tables, looking for moderators and deleted objects
+// Writes these to separate delimited strings.
 function getFormData() {
   let modusStr = "", delupStr = "", delusStr = "";
   let users = document.getElementsByClassName('user');
@@ -75,6 +77,7 @@ function receiveChanges(response) {
   if (response.responseText == "success") location.reload();
 };
 
+// Minimises and maximises the admin tables.
 function minimise(tableid) {
   let table = document.getElementById(tableid);
   if (table.style.display == "none") {

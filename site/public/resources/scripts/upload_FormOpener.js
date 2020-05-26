@@ -2,6 +2,8 @@
 
 addEventListener('load', initFormOpener);
 
+// When the user changes the upload category, open the new category, and close the old one.
+// Doing this, the user can switch between upload categories while retaining any added data.
 function initFormOpener() {
   console.log("Loading FormOpener...");
 

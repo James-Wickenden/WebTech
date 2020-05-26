@@ -2,6 +2,8 @@
 
 addEventListener('load', initHandler);
 
+// Similar to the account_submitted.js script in handling and execution.
+
 function initHandler() {
   let form = document.getElementById("account_form");
   function handleForm(event) { login(event); };
