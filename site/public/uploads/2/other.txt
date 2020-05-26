@@ -1,0 +1,2 @@
+say "Test config made by James Wickenden"
+tf_weapon_criticals 0
