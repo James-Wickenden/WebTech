@@ -44,7 +44,7 @@ async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
-  let as = await db.all("select * from users");
+  let as = await db.all("select * from uploads");
   console.log(as);
 
   await fs.access(root);
@@ -223,7 +223,9 @@ async function tryFileUpload_Form(POSTData, url) {
   let ps_keycheck = await db.prepare("select * from uploads where key=?;");
   let key = await generateNewKey(ps_keycheck);
 
-  let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, '');");
+  console.log(POSTData);
+
+  let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?);");
   let res = await ps_add.run(undefined, POSTData.user_id, POSTData.name, POSTData.file, POSTData.scsh, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
   let newUpload = res.lastID + "|";
 
@@ -666,6 +668,7 @@ async function loopUserSubmissions(contents) {
       if (sm != '') {
         let content_id = parseInt(sm);
         let content = await ps.get(content_id);
+        if (isEmpty(content)) continue;
         let i = 0;
         let row = ts[0];
 
@@ -702,7 +705,7 @@ function loopContentImages(content) {
       scsh_str += "<img src='/uploads/" + content.upload_id + "/" + scsh + "' class='slide fade' type='image' height='500px'></img>\n";
     };
   };
-  console.log(scsh_str);
+
   return scsh_str;
 };
 
@@ -808,8 +811,18 @@ async function getRandomUrl() {
   let ps = await db.prepare("select * from uploads;");
   let as = await ps.all();
   if (as.length == 0) return "//";
+  if (as.length == 1) return "/content/" + as[0].upload_id;
 
-  let content_id = Math.floor(Math.random() * as.length) + 1;
+  let maxuploadid = 1;
+  for (upload of as) if (upload.upload_id > maxuploadid) maxuploadid = upload.upload_id;
+
+  let isValidPage = false;
+  let content_id;
+  while (!isValidPage) {
+    content_id = Math.floor(Math.random() * maxuploadid) + 1;
+    let content = await db.all("select * from uploads where upload_id=" + content_id + ";");
+    if (!isEmpty(content)) isValidPage = true;
+  };
 
   return "/content/" + content_id;
 };
@@ -843,9 +856,11 @@ async function getUserStats(contents) {
       if (sm != '') {
         let content_id = parseInt(sm);
         let content = await ps.get(content_id);
-        no_dnls += content.no_downloads;
-        no_favs += content.no_favourites;
-        no_subs += 1;
+        if (!isEmpty(content)) {
+          no_dnls += content.no_downloads;
+          no_favs += content.no_favourites;
+          no_subs += 1;
+        };
       };
     }
     catch(err) {
