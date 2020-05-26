@@ -82,7 +82,8 @@ async function handle(request, response) {
     if (url == "/logout") return handleMain(request, response);
     if (url == "/admin") url = "/admin.html";
     if (url == "/createaccount") url = "/create_account.html";
-
+    if (url == "/logo") url = "/logo.html";
+    
     let ok = await checkPath(url);
     if (! ok) return fail(response, NotFound, "URL not found.");
     let type = findType(url);
