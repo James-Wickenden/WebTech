@@ -44,9 +44,6 @@ async function start() {
   db = await sqlite.open("./db.sqlite");
   console.log(db);
 
-  let as = await db.all("select * from uploads");
-  console.log(as);
-
   await fs.access(root);
   await fs.access(root + "/index.html");
 
