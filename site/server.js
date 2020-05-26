@@ -58,7 +58,11 @@ async function start() {
   console.log("Visit http://localhost:80/");
 }
 
+// These functions relate to handling and delivering pages.
+// --------------------------------
+
 // Serve a request by delivering a file.
+// Requests containing "/post/" are handled by the handlePOST function which then handles each POST request.
 async function handle(request, response) {
     let url = request.url;
     console.log(url);
@@ -91,116 +95,12 @@ async function handle(request, response) {
     deliver(response, type, content);
 }
 
-function isEmpty(value){
-  return (value == null || value.length === 0);
+// Parses the request data and sends it to the callback function deliverPOST where it is handled and returned.
+async function handlePOST(request, response, url) {
+  await getRequestData(request, response, deliverPOST, url);
 };
 
-function getToday() {
-  let today = new Date;
-  let todayStr = today.getFullYear() + "." + (today.getMonth() + 1) + "." + today.getDate();
-  return todayStr;
-};
-
-async function tryAddNewAccount(POSTData) {
-  if (isEmpty(POSTData.name)) return 2;
-  if (isEmpty(POSTData.pass)) return 3;
-
-  let ps = await db.prepare("select * from users where username=?;");
-  let as = await ps.all(POSTData.name);
-  if (as.length != 0) return 5;
-
-  try {
-    let ps_keycheck = await db.prepare("select * from users where sessionkey=?;");
-    let sessionkey = await generateNewKey(ps_keycheck);
-
-    let ps_add = await db.prepare("insert into users values (?, ?, ?, false, ?, '', ?, '', '');");
-    let res = await ps_add.run(undefined, POSTData.name, POSTData.pass, getToday(), sessionkey);
-
-    return "1&id=" + res.lastID + "&sessionkey=" + sessionkey;
-  } catch (e) { console.log(e); }
-
-  return 0;
-}
-
-async function tryLogin(POSTData) {
-  try {
-    if (isEmpty(POSTData.name)) return -1;
-    if (isEmpty(POSTData.pass)) return -1;
-
-    let ps = await db.prepare("select * from users where username=?;");
-    let as = await ps.all(POSTData.name);
-    if (as.length == 0) return -1;
-    if (as[0].password != POSTData.pass) return -1;
-
-    let ps_keycheck = await db.prepare("select * from uploads where key=?;");
-    let key = await generateNewKey(ps_keycheck);
-
-    let ps_updateSessionKey = await db.prepare("update users set sessionkey=? where user_id=?;");
-    await ps_updateSessionKey.run(key, as[0].user_id);
-    return "id=" + as[0].user_id + "&sessionkey=" + key;
-  }
-  catch(err) {
-    console.log(err);
-    return "id=" + -1 + "&sessionkey=" + -1;
-  };
-};
-
-async function tryFileUpload_Form(POSTData, url) {
-  console.log(POSTData);
-  if (isEmpty(POSTData.cate)) return -1;
-  if (isEmpty(POSTData.name)) return -1;
-  if (isEmpty(POSTData.file)) return -1;
-  if (POSTData.cate == "o_other" && isEmpty(POSTData.cats)) return -1;
-  if (POSTData.desc.length >= 1024) return -1;
-  //if (isEmpty(POSTData.tags)) return -1;
-
-  let ps = await db.prepare("select * from users where user_id=? and sessionkey=?;");
-  let as = await ps.all(POSTData.user_id, POSTData.sessionkey);
-  if (as.length == 0) return -1;
-
-  ps = await db.prepare("select * from uploads where name=?;");
-  as = await ps.all(POSTData.name);
-  if (as.length != 0) return -1;
-
-  let screenshots = POSTData.scsh.split("|");
-  if (screenshots.length > 8) return -1;
-
-  let ps_keycheck = await db.prepare("select * from uploads where key=?;");
-  let key = await generateNewKey(ps_keycheck);
-
-  let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, '');");
-  let res = await ps_add.run(undefined, POSTData.user_id, POSTData.name, POSTData.file, POSTData.scsh, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
-  let newUpload = res.lastID + "|";
-
-  let ps_newsub = await db.prepare("update users set submissions = submissions || ? where user_id =?;")
-  ps_newsub.run(newUpload, POSTData.user_id);
-
-  return key;
-};
-
-async function tryFileUpload_Data(files, content_id) {
-  if (content_id == -1) {
-    console.log("Attempted to upload files to a folder with an invalid key.");
-    rimraf.sync(uploadstmp);
-    return content_id;
-  };
-
-  let uploadsDir  = process.cwd() + "\\public\\uploads\\" + content_id + "\\";
-  mkdirp.sync(uploadsDir);
-
-  let counter = 0;
-  await Object.keys(files).forEach(async function(name) {
-    path = files[name][0].path;
-    filename = files[name][0].originalFilename;
-    await fs.rename(path, uploadsDir + filename);
-    counter++;
-  });
-  if (counter == files.length) rimraf.sync(uploadstmp);
-
-  console.log('Upload completed!');
-  return content_id;
-};
-
+// The callback from getRequestData() where the POSTData parameter contains the parsed request data.
 async function deliverPOST(request, response, POSTData, url) {
   if (url == "/post") {
     return fail(response, Error, "Invalid request");
@@ -247,10 +147,123 @@ async function deliverPOST(request, response, POSTData, url) {
   deliver(response, "text/plain", "POST url not recognised.");
 };
 
-async function handlePOST(request, response, url) {
-  await getRequestData(request, response, deliverPOST, url);
+// Tries to add a new account to the according POSTData.
+// Returns integer statuscodes based on the result.
+// If successful, also returns the new user's ID to take them to their new homepage.
+async function tryAddNewAccount(POSTData) {
+  if (isEmpty(POSTData.name)) return 2;
+  if (isEmpty(POSTData.pass)) return 3;
+
+  let ps = await db.prepare("select * from users where username=?;");
+  let as = await ps.all(POSTData.name);
+  if (as.length != 0) return 5;
+
+  try {
+    let ps_keycheck = await db.prepare("select * from users where sessionkey=?;");
+    let sessionkey = await generateNewKey(ps_keycheck);
+
+    let ps_add = await db.prepare("insert into users values (?, ?, ?, false, ?, '', ?, '', '');");
+    let res = await ps_add.run(undefined, POSTData.name, POSTData.pass, getToday(), sessionkey);
+
+    return "1&id=" + res.lastID + "&sessionkey=" + sessionkey;
+  } catch (e) { console.log(e); }
+
+  return 0;
+}
+
+// Tries to login to an existing account to the according POSTData.
+// Returns -1 on failure.
+// If successful, returns the user's ID and the sessionkey that verifies them for that session.
+async function tryLogin(POSTData) {
+  try {
+    if (isEmpty(POSTData.name)) return -1;
+    if (isEmpty(POSTData.pass)) return -1;
+
+    let ps = await db.prepare("select * from users where username=?;");
+    let as = await ps.all(POSTData.name);
+    if (as.length == 0) return -1;
+    if (as[0].password != POSTData.pass) return -1;
+
+    let ps_keycheck = await db.prepare("select * from uploads where key=?;");
+    let key = await generateNewKey(ps_keycheck);
+
+    let ps_updateSessionKey = await db.prepare("update users set sessionkey=? where user_id=?;");
+    await ps_updateSessionKey.run(key, as[0].user_id);
+    return "id=" + as[0].user_id + "&sessionkey=" + key;
+  }
+  catch(err) {
+    console.log(err);
+    return "id=" + -1 + "&sessionkey=" + -1;
+  };
 };
 
+// Requests to upload a piece of content.
+// Validates the request, then adds it to the database with a generated key.
+// The key is used to validate the upload of data in tryFileUpload_Data()
+async function tryFileUpload_Form(POSTData, url) {
+  console.log(POSTData);
+  if (isEmpty(POSTData.cate)) return -1;
+  if (isEmpty(POSTData.name)) return -1;
+  if (isEmpty(POSTData.file)) return -1;
+  if (POSTData.cate == "o_other" && isEmpty(POSTData.cats)) return -1;
+  if (POSTData.desc.length >= 1024) return -1;
+  //if (isEmpty(POSTData.tags)) return -1;
+
+  let ps = await db.prepare("select * from users where user_id=? and sessionkey=?;");
+  let as = await ps.all(POSTData.user_id, POSTData.sessionkey);
+  if (as.length == 0) return -1;
+
+  ps = await db.prepare("select * from uploads where name=?;");
+  as = await ps.all(POSTData.name);
+  if (as.length != 0) return -1;
+
+  let screenshots = POSTData.scsh.split("|");
+  if (screenshots.length > 8) return -1;
+
+  let ps_keycheck = await db.prepare("select * from uploads where key=?;");
+  let key = await generateNewKey(ps_keycheck);
+
+  let ps_add = await db.prepare("insert into uploads values (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, '');");
+  let res = await ps_add.run(undefined, POSTData.user_id, POSTData.name, POSTData.file, POSTData.scsh, POSTData.cate, POSTData.cats, getToday(), POSTData.desc, key);
+  let newUpload = res.lastID + "|";
+
+  let ps_newsub = await db.prepare("update users set submissions = submissions || ? where user_id =?;")
+  ps_newsub.run(newUpload, POSTData.user_id);
+
+  return key;
+};
+
+// Requests to upload the files corresponding to a form request.
+// Validates the request using the key from tryFileUpload_Form()
+// The associated files are saved in /public/uploadstemp/
+// then transferred to /public/uploads/{upload_id}/ and renamed.
+async function tryFileUpload_Data(files, content_id) {
+  if (content_id == -1) {
+    console.log("Attempted to upload files to a folder with an invalid key.");
+    rimraf.sync(uploadstmp);
+    return content_id;
+  };
+
+  let uploadsDir  = process.cwd() + "\\public\\uploads\\" + content_id + "\\";
+  mkdirp.sync(uploadsDir);
+
+  let counter = 0;
+  await Object.keys(files).forEach(async function(name) {
+    path = files[name][0].path;
+    filename = files[name][0].originalFilename;
+    await fs.rename(path, uploadsDir + filename);
+    counter++;
+  });
+  if (counter == files.length) rimraf.sync(uploadstmp);
+
+  console.log('Upload completed!');
+  return content_id;
+};
+
+// Handles a request for viewing an upload.
+// Gets the page template of /content.html, then splits it on the special character $
+// And fills in the data loaded from the database.
+// Iterable elements like the images and comments are looped through in respective functions.
 async function handleContent(request, response, url) {
   let content_id = parseInt(url.split("/").pop());
 
@@ -278,8 +291,9 @@ async function handleContent(request, response, url) {
   deliver(response, "application/xhtml+xml", page);
 };
 
+// Handles a request for viewing the index page.
+// Gets the page template of /index.html, then formats it with looped content.
 async function handleMain(request, response) {
-  //console.log("Handling main page request, url=" + request.url);
   let file = root + "/index.html";
   let template = await fs.readFile(root + "/index.html","utf8");
   if (isEmpty(template)) return fail(response, Error, "Content file not found.");
@@ -317,6 +331,8 @@ async function handleMain(request, response) {
   deliver(response, "application/xhtml+xml", page);
 };
 
+// Handles a request for viewing a user's page
+// Gets the page template of /user.html, then formats it.
 async function handleUser(request, response, url) {
   let user_id = parseInt(url.split("/").pop());
   if (user_id == -1) return deliver(response, "application/xhtml+xml", "You must log in before you can access your homepage");
@@ -346,6 +362,8 @@ async function handleUser(request, response, url) {
   deliver(response, "application/xhtml+xml", page);
 };
 
+// Loads the navbar html and returns it to be inserted into each page.
+// The navbar is dynamic on the current user being logged in or not, or if they are an admin.
 async function handleNavbar(request, response, user_id, sessionkey) {
   let ps_users = await db.prepare("select * from users where user_id=? and sessionkey=?");
   let as_users = await ps_users.get(user_id, sessionkey);
@@ -370,6 +388,8 @@ async function handleNavbar(request, response, user_id, sessionkey) {
   deliver(response, "application/xhtml+xml", template);
 };
 
+// Admins can visit a page where they can view and delete users and uploaded content.
+// This function loads, parses, and returns that page.
 async function handleAdminPage(request, response, userid, sessionkey) {
   console.log("userid=" + userid);
   console.log("sessionkey=" + sessionkey);
@@ -393,11 +413,11 @@ async function handleAdminPage(request, response, userid, sessionkey) {
   return deliver(response, "application/xhtml+xml", page);
 };
 
+// This function handles an admin's request to delete something, or to change a user's admin status.
 async function handleAdminUpdate(request, response, POSTData) {
   let ps_admin = await db.prepare("select is_moderator from users where user_id=? and sessionkey=?;");
   let is_admin = await ps_admin.get(POSTData.userid, POSTData.sessionkey);
 
-  console.log(POSTData);
   let deniedHTML = "You do not have permission to edit this form.";
   if (isEmpty(is_admin)) return deliver(response, "application/xhtml+xml", deniedHTML);
   if (!is_admin.is_moderator) return deliver(response, "application/xhtml+xml", deniedHTML);
@@ -417,14 +437,17 @@ async function handleAdminUpdate(request, response, POSTData) {
       await ps_mod.run(is_user_mod, user.user_id);
 
       let is_delete_user = deleteUsers.includes((user.user_id - 1).toString());
-      if (is_delete_user) await ps_del_us.run(user.user_id);
+      if (is_delete_user) {
+        console.log("deleting user_id=" + user.user_id);
+        await ps_del_us.run(user.user_id);
+      };
     };
 
     let ps_del_up = await db.prepare("delete from uploads where upload_id=?;");
     for (delupid of deleteUploads) {
       if (delupid == '') break;
       let upload_id = parseInt(delupid) + 1;
-      console.log("upload_id=" + upload_id);
+      console.log("deleting upload_id=" + upload_id);
       await ps_del_up.run(upload_id);
       rimraf.sync( process.cwd() + "\\public\\uploads\\" + upload_id);
     }
@@ -434,6 +457,8 @@ async function handleAdminUpdate(request, response, POSTData) {
   return deliver(response, "application/xhtml+xml", "success");
 };
 
+// This function handles getting and setting favourites of a user on some content.
+// This could be improved MASSIVELY by using a favourites database similar to the comments database.
 async function handleFavouriting(request, response, contentid, userid, sessionkey) {
   let url = request.url;
   if (userid == "-1") return deliver(response, "application/xhtml+xml", "false|get");
@@ -486,6 +511,8 @@ async function handleFavouriting(request, response, contentid, userid, sessionke
   };
 };
 
+// This function handles a user updating their profile's "about" section.
+// It returns "success" or "fail" to indicate to the browser the result for UX
 async function handleProfileUpdate(request, response, POSTData) {
   if (POSTData.userid == "-1") return deliver(response, "application/xhtml+xml", "fail");
   let user_id = parseInt(POSTData.userid);
@@ -499,6 +526,8 @@ async function handleProfileUpdate(request, response, POSTData) {
   deliver(response, "application/xhtml+xml", "success");
 };
 
+// This function handles a user submitting a comment on an upload.
+// It could be improved with comment validation, aside from rejecting empty/too long comments.
 async function handleComment(request, response, POSTData) {
   console.log(POSTData);
   let ps_finduser = await db.prepare("select * from users where user_id=? and sessionkey=?;");
@@ -510,6 +539,8 @@ async function handleComment(request, response, POSTData) {
   return deliver(response, "application/xhtml+xml", "success");
 };
 
+// This function handles a user's request to download a piece of content.
+// I used a piped synchronous filestream because I could get it to work.
 async function handleDownload(request, response) {
   let content_id = parseInt(request.url.split("/").pop());
   console.log("Attempting to download content with id=" + content_id);
@@ -532,20 +563,7 @@ async function handleDownload(request, response) {
   filestream.pipe(response);
 };
 
-async function validateKeys(request, fields) {
-  let ps_uploads, as_uploads;
-
-  ps_uploads = await db.prepare("select * from uploads where name=? and key=?");
-  as_uploads = await ps_uploads.all(fields.uploadName[0], fields.key[0]);
-  if (as_uploads.length != 1) return -1;
-
-  let ps_users = await db.prepare("select * from users where user_id=? and sessionkey=?");
-  let as_users = await ps_users.all(fields.user_id[0], fields.sessionkey[0]);
-  if (as_users.length != 1) return -1;
-
-  return as_uploads[0].upload_id;
-};
-
+// This key function parses the data sent in POST requests, and sends it to the callback function.
 // written with help from:
 // https://itnext.io/how-to-handle-the-post-request-body-in-node-js-without-using-a-framework-cd2038b93190?gi=d6a8f3e99295
 // multipart parsing was done using the multiparty npm package.
@@ -559,6 +577,7 @@ function getRequestData(request, response, callback, url) {
     request.on('data', chunk => {
       body += chunk.toString();
     });
+
     request.on('end', () => {
       callback(request, response, parse(body), url);
     });
@@ -582,6 +601,10 @@ function getRequestData(request, response, callback, url) {
   };
 };
 
+// These functions relate to iterating through data to generate HTML.
+// --------------------------------
+
+// This function loops through main page uploads and generates the HTML for them.
 async function loopMainContent(category) {
   let ps_subs = await db.prepare("select * from uploads where category=?;");
   let ps_user = await db.prepare("select * from users where user_id=?;");
@@ -625,6 +648,7 @@ async function loopMainContent(category) {
   return loop_html;
 };
 
+// This function loops through a user's uploads and generates the HTML for them.
 async function loopUserSubmissions(contents) {
   if (contents[0] == '') return "<em>This user has not submitted anything yet!</em>";
 
@@ -668,6 +692,7 @@ async function loopUserSubmissions(contents) {
   return loop_html;
 }
 
+// This function loops through a content and generates the HTML for the images.
 function loopContentImages(content) {
   let screenshots = content.screenshots.split("|");
   let scsh_str = "";
@@ -681,6 +706,7 @@ function loopContentImages(content) {
   return scsh_str;
 };
 
+// This function loops through a content and generates the HTML for the comments.
 async function loopContentComments(content) {
   let ps_get_comments = await db.prepare("select * from comments where upload_id=?;");
   let comments = await ps_get_comments.all(content.upload_id);
@@ -702,6 +728,9 @@ async function loopContentComments(content) {
   return [commentStr, commentCount];
 };
 
+// This function loops through all the content and users and generates the HTML for a pair of tables.
+// The user with user_id = 1 is designated as the site admin and cannot be deleted or removed as a moderator.
+// (TODO: add validation when updating admin content to ensure this!)
 function loopAdminForm(ts, users, uploads) {
   let loop_html = ts[0];
   let maxuserid = 0, maxuploadid = 0;
@@ -742,6 +771,11 @@ function loopAdminForm(ts, users, uploads) {
   return loop_html;
 };
 
+// These functions serve as auxiliary functions to support execution.
+// --------------------------------
+
+// This function parses the Category of a piece of content into a readable string.
+// Could be made a two-line function by splitting and capitalising the first letter!
 function parseCategory(content) {
   switch (content.category) {
     default: return "";
@@ -752,6 +786,8 @@ function parseCategory(content) {
   };
 };
 
+// This function parses the uploaded screenshots to an upload and returns the path to the first image.
+// If no images were uploaded, a default .png is used.
 function parseContentThumbnail(content) {
   if (content.screenshots == '') {
     switch (content.category) {
@@ -765,6 +801,8 @@ function parseContentThumbnail(content) {
   return "/uploads/" + content.upload_id + "/" + content.screenshots.split("|")[0];
 };
 
+// This function generates a url corresponding to a random upload.
+// It returns the index page if no content has been uplaoded.
 async function getRandomUrl() {
   console.log("Generating a random page id...");
   let ps = await db.prepare("select * from uploads;");
@@ -776,6 +814,24 @@ async function getRandomUrl() {
   return "/content/" + content_id;
 };
 
+// This function validates the upload key for tryFileUpload_Data()
+// Validation is done when parsing the mutliparty form, as fields are not sent through to the callback.
+async function validateKeys(request, fields) {
+  let ps_uploads, as_uploads;
+
+  ps_uploads = await db.prepare("select * from uploads where name=? and key=?");
+  as_uploads = await ps_uploads.all(fields.uploadName[0], fields.key[0]);
+  if (as_uploads.length != 1) return -1;
+
+  let ps_users = await db.prepare("select * from users where user_id=? and sessionkey=?");
+  let as_users = await ps_users.all(fields.user_id[0], fields.sessionkey[0]);
+  if (as_users.length != 1) return -1;
+
+  return as_uploads[0].upload_id;
+};
+
+// This function browses all the content uplaoded by a user.
+// It sums their downloads and favourites, and the number of submissions, and returns them.
 async function getUserStats(contents) {
   if (contents[0] == '') return {favourites:0, submissions:0, downloads:0};
 
@@ -801,6 +857,21 @@ async function getUserStats(contents) {
   return { downloads: no_dnls, favourites: no_favs, submissions: no_subs };
 };
 
+// Returns true if the value is null or empty.
+function isEmpty(value){
+  return (value == null || value.length === 0);
+};
+
+// Returns a string containing today's date in YYYY.M.DD format.
+// Could be parsed into a more readable string for better UX.
+function getToday() {
+  let today = new Date;
+  let todayStr = today.getFullYear() + "." + (today.getMonth() + 1) + "." + today.getDate();
+  return todayStr;
+};
+
+// Generates a key using the prepared statement parameter.
+// This is done to ensure two keys do not overlap, should this be required to be avoided.
 async function generateNewKey(ps) {
   let key = Math.floor(Math.random() * 65536);
 
@@ -817,6 +888,9 @@ async function generateNewKey(ps) {
   };
   return key;
 };
+
+// These functions have been changed little/none from the original server.js file, and help serve pages.
+// --------------------------------
 
 // Check if a path is in or can be added to the set of site paths, in order
 // to ensure case-sensitivity.
